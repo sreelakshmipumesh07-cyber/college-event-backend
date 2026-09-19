@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>College Event Registration System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ──────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:        #0d0f1a;
+      --surface:   #151827;
+      --surface2:  #1c2035;
+      --border:    #252a40;
+      --accent:    #6c63ff;
+      --accent2:   #ff6584;
+      --accent3:   #43e97b;
+      --accent4:   #f7971e;
+      --text:      #e8eaf6;
+      --text-muted:#8b93b0;
+      --radius:    12px;
+      --shadow:    0 8px 32px rgba(0,0,0,0.4);
+    }
+    html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+
+    /* ── Layout ────────────────────────────────────────────────── */
+    .layout { display: flex; height: 100vh; overflow: hidden; }
+
+    /* ── Sidebar ───────────────────────────────────────────────── */
+    .sidebar {
+      width: 240px; min-width: 240px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      padding: 0; overflow-y: auto;
+    }
+    .sidebar-brand {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-brand h1 {
+      font-size: 15px; font-weight: 700; color: var(--text);
+      line-height: 1.3;
+    }
+    .sidebar-brand span {
+      font-size: 11px; color: var(--accent); font-weight: 600;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .brand-icon { font-size: 28px; margin-bottom: 8px; }
+
+    .nav-section { padding: 16px 12px 4px; }
+    .nav-label {
+      font-size: 10px; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 1.2px;
+      padding: 0 8px 8px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 8px;
+      cursor: pointer; font-size: 14px; font-weight: 500;
+      color: var(--text-muted); margin-bottom: 2px;
+      transition: all 0.2s ease;
+    }
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item.active {
+      background: linear-gradient(135deg, rgba(108,99,255,0.2), rgba(108,99,255,0.05));
+      color: var(--accent); border: 1px solid rgba(108,99,255,0.3);
+    }
+    .nav-item i { width: 18px; text-align: center; font-size: 15px; }
+
+    /* ── Main ──────────────────────────────────────────────────── */
+    .main { flex: 1; overflow-y: auto; background: var(--bg); }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 28px; border-bottom: 1px solid var(--border);
+      background: var(--surface); position: sticky; top: 0; z-index: 10;
+    }
+    .topbar h2 { font-size: 18px; font-weight: 700; }
+    .topbar-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--accent3);
+      display: inline-block; margin-right: 6px; animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .server-status { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; }
+
+    .content { padding: 28px; }
+
+    /* ── Page sections ─────────────────────────────────────────── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── Stat Cards ────────────────────────────────────────────── */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px; margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px;
+      display: flex; align-items: center; gap: 16px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+    .stat-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .stat-icon.purple { background: rgba(108,99,255,0.15); color: var(--accent); }
+    .stat-icon.pink   { background: rgba(255,101,132,0.15); color: var(--accent2); }
+    .stat-icon.green  { background: rgba(67,233,123,0.15);  color: var(--accent3); }
+    .stat-icon.orange { background: rgba(247,151,30,0.15);  color: var(--accent4); }
+    .stat-value { font-size: 26px; font-weight: 800; }
+    .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ── Cards ─────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); margin-bottom: 24px; overflow: hidden;
+    }
+    .card-header {
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-title { font-size: 15px; font-weight: 600; }
+    .card-body { padding: 20px; }
+
+    /* ── Tables ────────────────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th {
+      background: var(--surface2); padding: 11px 14px;
+      text-align: left; font-size: 11px; font-weight: 600;
+      color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px;
+    }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--surface2); }
+    tbody td { padding: 12px 14px; color: var(--text); }
+
+    /* ── Badges ────────────────────────────────────────────────── */
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-green   { background: rgba(67,233,123,0.15);  color: var(--accent3); }
+    .badge-yellow  { background: rgba(247,151,30,0.15);  color: var(--accent4); }
+    .badge-red     { background: rgba(255,101,132,0.15); color: var(--accent2); }
+    .badge-purple  { background: rgba(108,99,255,0.15);  color: var(--accent); }
+
+    /* ── Forms ─────────────────────────────────────────────────── */
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px; color: var(--text);
+      font-size: 13px; font-family: inherit; outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: var(--accent); }
+    .form-group select option { background: var(--surface2); }
+
+    /* ── Buttons ───────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 10px 18px; border-radius: 8px; border: none;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; font-family: inherit;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #5a52d5; transform: translateY(-1px); }
+    .btn-danger  { background: rgba(255,101,132,0.15); color: var(--accent2); border: 1px solid rgba(255,101,132,0.3); }
+    .btn-danger:hover  { background: rgba(255,101,132,0.25); }
+    .btn-success { background: rgba(67,233,123,0.15); color: var(--accent3); border: 1px solid rgba(67,233,123,0.3); }
+    .btn-success:hover { background: rgba(67,233,123,0.25); }
+    .btn-sm { padding: 5px 11px; font-size: 12px; }
+
+    /* ── Toast ─────────────────────────────────────────────────── */
+    #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+    .toast {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 18px; font-size: 13px;
+      box-shadow: var(--shadow); animation: slideIn 0.3s ease;
+      display: flex; align-items: center; gap: 10px; min-width: 260px;
+    }
+    .toast.success { border-left: 3px solid var(--accent3); }
+    .toast.error   { border-left: 3px solid var(--accent2); }
+    @keyframes slideIn { from { opacity:0; transform:translateX(30px); } to { opacity:1; transform:translateX(0); } }
+
+    /* ── Modal ─────────────────────────────────────────────────── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6); z-index: 100;
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 28px; width: 480px; max-width: 95vw;
+      box-shadow: var(--shadow);
+    }
+    .modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+    /* ── Empty state ───────────────────────────────────────────── */
+    .empty-state {
+      text-align: center; padding: 48px 20px; color: var(--text-muted);
+    }
+    .empty-state i { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+    .empty-state p { font-size: 14px; }
+
+    /* ── Loading ───────────────────────────────────────────────── */
+    .loader {
+      display: inline-block; width: 18px; height: 18px;
+      border: 2px solid var(--border); border-top-color: var(--accent);
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .section-divider { height: 1px; background: var(--border); margin: 24px 0; }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">🎓</div>
+      <h1>Event Registration</h1>
+      <span>Management System</span>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Overview</div>
+      <div class="nav-item active" onclick="navigate('dashboard')">
+        <i class="fas fa-chart-pie"></i> Dashboard
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Manage</div>
+      <div class="nav-item" onclick="navigate('events')">
+        <i class="fas fa-calendar-star"></i> Events
+      </div>
+      <div class="nav-item" onclick="navigate('students')">
+        <i class="fas fa-user-graduate"></i> Students
+      </div>
+      <div class="nav-item" onclick="navigate('organizers')">
+        <i class="fas fa-user-tie"></i> Organizers
+      </div>
+      <div class="nav-item" onclick="navigate('venues')">
+        <i class="fas fa-building"></i> Venues
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Transactions</div>
+      <div class="nav-item" onclick="navigate('registrations')">
+        <i class="fas fa-clipboard-list"></i> Registrations
+      </div>
+      <div class="nav-item" onclick="navigate('payments')">
+        <i class="fas fa-credit-card"></i> Payments
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main ─────────────────────────────────────────────────── -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div>
+        <h2 id="page-title">Dashboard</h2>
+        <div class="topbar-sub" id="page-sub">Overview of the system</div>
+      </div>
+      <div class="server-status">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="server-status-text">Connecting...</span>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ══════════════════════════════════════════════════════ -->
+      <!-- DASHBOARD PAGE                                         -->
+      <!-- ══════════════════════════════════════════════════════ -->
+      <div class="page active" id="page-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon purple"><i class="fas fa-calendar-check"></i></div>
+            <div><div class="stat-value" id="stat-events">—</div><div class="stat-label">Total Events</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon pink"><i class="fas fa-users"></i></div>
+            <div><div class="stat-value" id="stat-students">—</div><div class="stat-label">Students</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-clipboard-check"></i></div>
+            <div><div class="stat-value" id="stat-regs">—</div><div class="stat-label">Registrations</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange"><i class="fas fa-indian-rupee-sign"></i></div>
+            <div><div class="stat-value" id="stat-revenue">—</div><div class="stat-label">Revenue (₹)</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i class="fas fa-calendar-alt" style="color:var(--accent);margin-right:8px"></i>Upcoming Events</span>
+            <button class="btn btn-primary btn-sm" onclick="navigate('events')"><i class="fas fa-plus"></i> Add Event</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead><tr>
+                  <th>Event</th><th>Type</th><th>Date</th><th>Venue</th>
+                  <th>Capacity</th><th>Seats Left</th><th>Fee</th>
+                </tr></thead>
+                <tbody id="dash-events-body">
+                  <tr><td colspan="7"><div class="empty-state"><div class="loader"></div></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════ -->
+      <!-- EVENTS PAGE                                            -->
+      <!-- ══════════════════════════════════════════════════════ -->
+      <div class="page" id="page-events">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i class="fas fa-plus-circle" style="color:var(--accent);margin-right:8px"></i>Add New Event</span>
+          </div>
+          <div class="card-body">
+            <form id="event-form" onsubmit="submitEvent(event)">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Event Name *</label>
+                  <input type="text" id="ev-name" placeholder="e.g. Tech Fest 2026" required />
+                </div>
+                <div class="form-group">
+                  <label>Event Type *</label>
+                  <select id="ev-type" required>
+                    <option value="">— Select —</option>
+                    <option>Technical</option><option>Cultural</option>
+                    <option>Workshop</option><option>Sports</option>
+                    <option>Networking</option><option>Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Date *</label>
+                  <input type="date" id="ev-date" required />
+                </div>
+                <div class="form-group">
+                  <label>Time *</label>
+                  <input type="time" id="ev-time" required />
+                </div>
+                <div class="form-group">
+                  <label>Registration Fee (₹)</label>
+                  <input type="number" id="ev-fee" value="0" min="0" step="0.01" />
+                </div>
+                <div class="form-group">
+                  <label>Capacity *</label>
+                  <input type="number" id="ev-capacity" min="1" placeholder="Max students" required />
+                </div>
+                <div class="form-group">
+                  <label>Venue *</label>
+                  <select id="ev-venue" required><option value="">— Loading —</option></select>
+                </div>
+                <div class="form-group">
+                  <label>Organizer *</label>
+                  <select id="ev-organizer" required><option value="">— Loading —</option></select>
+                </div>
+                <div class="form-group" style="grid-column:1/-1">
+                  <label>Description</label>
+                  <textarea id="ev-desc" rows="2" placeholder="Brief description..."></textarea>
+                </div>
+              </div>
+              <div style="margin-top:16px">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Event</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">All Events</span>
+            <button class="btn btn-primary btn-sm" onclick="loadEvents()"><i class="fas fa-sync"></i> Refresh</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead><tr>
+                  <th>ID</th><th>Event</th><th>Type</th><th>Date</th>
+                  <th>Venue</th><th>Organizer</th><th>Seats Left</th><th>Fee</th><th>Action</th>
+                </tr></thead>
+                <tbody id="events-body">
+                  <tr><td colspan="9"><div class="empty-state"><div class="loader"></div></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════ -->
+      <!-- STUDENTS PAGE                                          -->
+      <!-- ══════════════════════════════════════════════════════ -->
+      <div class="page" id="page-students">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i class="fas fa-user-plus" style="color:var(--accent);margin-right:8px"></i>Add New Student</span>
+          </div>
+          <div class="card-body">
+            <form id="student-form" onsubmit="submitStudent(event)">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Full Name *</label>
+                  <input type="text" id="st-name" placeholder="e.g. Arjun Mehta" required />
+                </div>
+                <div class="form-group">
+                  <label>Phone *</label>
+                  <input type="text" id="st-phone" placeholder="10-digit number" required />
+                </div>
+                <div class="form-group">
+                  <label>Email *</label>
+                  <input type="email" id="st-email" placeholder="student@college.edu" required />
+                </div>
+                <div class="form-group">
+                  <label>Department *</label>
+                  <select id="st-dept" required>
+                    <option value="">— Select —</option>
+                    <option>Computer Science</option><option>Information Technology</option>
+                    <option>Electronics</option><option>Mechanical</option>
+                    <option>Civil Engineering</option><option>Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Year *</label>
+                  <select id="st-year" required>
+                    <option value="">— Select —</option>
+                    <option value="1">1st Year</option><option value="2">2nd Year</option>
+                    <option value="3">3rd Year</option><option value="4">4th Year</option>
+                  </select>
+                </div>
+              </div>
+              <div style="margin-top:16px">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-user-plus"></i> Add Student</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">All Students</span>
+            <button class="btn btn-primary btn-sm" onclick="loadStudents()"><i class="fas fa-sync"></i> Refresh</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead><tr>
+                  <th>ID</th><th>Name</th><th>Email</th><th>Phone</th>
+                  <th>Department</th><th>Year</th><th>Action</th>
+                </tr></thead>
+                <tbody id="students-body">
+                  <tr><td colspan="7"><div class="empty-state"><div class="loader"></div></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════ -->
+      <!-- ORGANIZERS PAGE                                        -->
+      <!-- ══════════════════════════════════════════════════════ -->
+      <div class="page" id="page-organizers">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i class="fas fa-user-tie" style="color:var(--accent);margin-right:8px"></i>Add New Organizer</span>
+          </div>
+          <div class="card-body">
+            <form id="organizer-form" onsubmit="submitOrganizer(event)">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Full Name *</label>
+                  <input type="text" id="org-name" placeholder="e.g. Dr. Ramesh Kumar" required />
+                </div>
+                <div class="form-group">
+                  <label>Email *</label>
+                  <input type="email" id="org-email" placeholder="faculty@college.edu" required />
+                </div>
+                <div class="form-group">
+                  <label>Phone *</label>
+                  <input type="text" id="org-phone" placeholder="10-digit number" required />
+                </div>
+                <div class="form-group">
+                  <label>Department *</label>
+                  <select id="org-dept" required>
+                    <option value="">— Select —</option>
+                    <option>Computer Science</option><option>Information Technology</option>
+                    <option>Electronics</option><option>Mechanical</option>
+                    <option>Civil Engineering</option><option>Other</option>
+                  </select>
+                </div>
+              </div>
+              <div style="margin-top:16px">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Organizer</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">All Organizers</span>
+            <button class="btn btn-primary btn-sm" onclick="loadOrganizers()"><i class="fas fa-sync"></i> Refresh</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Department</th><th>Action</th></tr></thead>
+                <tbody id="organizers-body">
+                  <tr><td colspan="6"><div class="empty-state"><div class="loader"></div></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════ -->
+      <!-- VENUES PAGE                                            -->
+      <!-- ══════════════════════════════════════════════════════ -->
+      <div class="page" id="page-venues">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i class="fas fa-building" style="color:var(--accent);margin-right:8px"></i>Add New Venue</span>
+          </div>
+          <div class="card-body">
+            <form id="venue-form" onsubmit="submitVenue(event)">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Venue Name *</label>
+                  <input type="text" id="vn-name" placeholder="e.g. Main Auditorium" required />
+                </div>
+                <div class="form-group">
+                  <label>Location *</label>
+                  <input type="text" id="vn-location" placeholder="e.g. Block A, Ground Floor" required />
+                </div>
+              </div>
+              <div style="margin-top:16px">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Venue</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">All Venues</span>
+            <button class="btn btn-primary btn-sm" onclick="loadVenues()"><i class="fas fa-sync"></i> Refresh</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>ID</th><th>Venue Name</th><th>Location</th><th>Action</th></tr></thead>
+                <tbody id="venues-body">
+                  <tr><td colspan="4"><div class="empty-state"><div class="loader"></div></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════ -->
+      <!-- REGISTRATIONS PAGE                                     -->
+      <!-- ══════════════════════════════════════════════════════ -->
+      <div class="page" id="page-registrations">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i class="fas fa-clipboard-plus" style="color:var(--accent);margin-right:8px"></i>Register Student for Event</span>
+          </div>
+          <div class="card-body">
+            <form id="reg-form" onsubmit="submitRegistration(event)">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Student *</label>
+                  <select id="reg-student" required><option value="">— Select Student —</option></select>
+                </div>
+                <div class="form-group">
+                  <label>Event *</label>
+                  <select id="reg-event" required><option value="">— Select Event —</option></select>
+                </div>
+                <div class="form-group">
+                  <label>Status</label>
+                  <select id="reg-status">
+                    <option value="Pending">Pending</option>
+                    <option value="Confirmed">Confirmed</option>
+                  </select>
+                </div>
+              </div>
+              <div style="margin-top:16px">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-check-circle"></i> Register</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">All Registrations</span>
+            <button class="btn btn-primary btn-sm" onclick="loadRegistrations()"><i class="fas fa-sync"></i> Refresh</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead><tr>
+                  <th>ID</th><th>Student</th><th>Event</th><th>Date</th>
+                  <th>Status</th><th>Payment</th><th>Actions</th>
+                </tr></thead>
+                <tbody id="registrations-body">
+                  <tr><td colspan="7"><div class="empty-state"><div class="loader"></div></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════ -->
+      <!-- PAYMENTS PAGE                                          -->
+      <!-- ══════════════════════════════════════════════════════ -->
+      <div class="page" id="page-payments">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i class="fas fa-money-bill-wave" style="color:var(--accent);margin-right:8px"></i>Record Payment</span>
+          </div>
+          <div class="card-body">
+            <form id="pay-form" onsubmit="submitPayment(event)">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Registration ID *</label>
+                  <input type="number" id="pay-reg" placeholder="Enter Registration ID" min="1" required />
+                </div>
+                <div class="form-group">
+                  <label>Amount (₹) *</label>
+                  <input type="number" id="pay-amount" placeholder="0.00" min="0" step="0.01" required />
+                </div>
+                <div class="form-group">
+                  <label>Payment Method *</label>
+                  <select id="pay-method" required>
+                    <option value="">— Select —</option>
+                    <option>Cash</option><option>UPI</option>
+                    <option>Card</option><option>Net Banking</option>
+                  </select>
+                </div>
+              </div>
+              <div style="margin-top:16px">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-receipt"></i> Record Payment</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">All Payments</span>
+            <button class="btn btn-primary btn-sm" onclick="loadPayments()"><i class="fas fa-sync"></i> Refresh</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead><tr>
+                  <th>Pay ID</th><th>Student</th><th>Event</th>
+                  <th>Amount</th><th>Method</th><th>Date</th><th>Action</th>
+                </tr></thead>
+                <tbody id="payments-body">
+                  <tr><td colspan="7"><div class="empty-state"><div class="loader"></div></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<!-- ── Status Update Modal ──────────────────────────────────── -->
+<div class="modal-overlay" id="status-modal">
+  <div class="modal">
+    <h3>Update Registration Status</h3>
+    <div class="form-group">
+      <label>New Status</label>
+      <select id="modal-status">
+        <option value="Pending">Pending</option>
+        <option value="Confirmed">Confirmed</option>
+        <option value="Cancelled">Cancelled</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmStatusUpdate()"><i class="fas fa-check"></i> Update</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ── Config ──────────────────────────────────────────────── */
+  const API = 'http://localhost:5000';
+  let currentRegId = null;
+
+  /* ── Navigation ──────────────────────────────────────────── */
+  const pageTitles = {
+    dashboard:     ['Dashboard',     'Overview of the system'],
+    events:        ['Events',        'Manage all college events'],
+    students:      ['Students',      'Manage student records'],
+    organizers:    ['Organizers',    'Manage event organizers'],
+    venues:        ['Venues',        'Manage event venues'],
+    registrations: ['Registrations', 'Register students for events'],
+    payments:      ['Payments',      'Record and track payments'],
+  };
+
+  function navigate(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    document.querySelector(`[onclick="navigate('${page}')"]`).classList.add('active');
+    const [title, sub] = pageTitles[page];
+    document.getElementById('page-title').textContent = title;
+    document.getElementById('page-sub').textContent = sub;
+
+    const loaders = {
+      dashboard:     loadDashboard,
+      events:        loadEvents,
+      students:      loadStudents,
+      organizers:    loadOrganizers,
+      venues:        loadVenues,
+      registrations: loadRegistrations,
+      payments:      loadPayments,
+    };
+    loaders[page]?.();
+  }
+
+  /* ── API Helper ──────────────────────────────────────────── */
+  async function api(path, method = 'GET', body = null) {
+    const opts = { method, headers: { 'Content-Type': 'application/json' } };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(API + path, opts);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Request failed');
+    return data;
+  }
+
+  /* ── Toast ───────────────────────────────────────────────── */
+  function toast(msg, type = 'success') {
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}" style="color:var(--accent${type === 'success' ? '3' : '2'})"></i> ${msg}`;
+    document.getElementById('toast-container').appendChild(el);
+    setTimeout(() => el.remove(), 3500);
+  }
+
+  /* ── Server Status ───────────────────────────────────────── */
+  async function checkServer() {
+    try {
+      await api('/');
+      document.getElementById('status-dot').style.background = 'var(--accent3)';
+      document.getElementById('server-status-text').textContent = 'Server Online';
+    } catch {
+      document.getElementById('status-dot').style.background = 'var(--accent2)';
+      document.getElementById('server-status-text').textContent = 'Server Offline';
+    }
+  }
+
+  /* ── Badge helper ────────────────────────────────────────── */
+  function statusBadge(s) {
+    const map = { Confirmed: 'badge-green', Pending: 'badge-yellow', Cancelled: 'badge-red' };
+    return `<span class="badge ${map[s] || 'badge-purple'}">${s}</span>`;
+  }
+  function typeBadge(t) {
+    return `<span class="badge badge-purple">${t}</span>`;
+  }
+
+  /* ══════════════════════════════════════════════════════════ */
+  /* DASHBOARD                                                  */
+  /* ══════════════════════════════════════════════════════════ */
+  async function loadDashboard() {
+    try {
+      const [events, students, regs, payments] = await Promise.all([
+        api('/events/'), api('/students/'),
+        api('/registrations/'), api('/payments/'),
+      ]);
+      document.getElementById('stat-events').textContent   = events.length;
+      document.getElementById('stat-students').textContent = students.length;
+      document.getElementById('stat-regs').textContent     = regs.length;
+      const revenue = payments.reduce((s, p) => s + parseFloat(p.Amount || 0), 0);
+      document.getElementById('stat-revenue').textContent  = revenue.toFixed(0);
+
+      const tbody = document.getElementById('dash-events-body');
+      if (!events.length) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fas fa-calendar-times"></i><p>No events yet</p></div></td></tr>`; return; }
+      tbody.innerHTML = events.map(e => `
+        <tr>
+          <td><strong>${e.Event_name}</strong></td>
+          <td>${typeBadge(e.Event_Type)}</td>
+          <td>${e.Date}</td>
+          <td>${e.Venue_Name || '—'}</td>
+          <td>${e.Capacity}</td>
+          <td><span class="badge ${e.Remaining_Seats > 10 ? 'badge-green' : e.Remaining_Seats > 0 ? 'badge-yellow' : 'badge-red'}">${e.Remaining_Seats}</span></td>
+          <td>₹${parseFloat(e.Registration_fee).toFixed(0)}</td>
+        </tr>`).join('');
+    } catch(e) { toast('Failed to load dashboard: ' + e.message, 'error'); }
+  }
+
+  /* ══════════════════════════════════════════════════════════ */
+  /* EVENTS                                                     */
+  /* ══════════════════════════════════════════════════════════ */
+  async function loadEvents() {
+    const tbody = document.getElementById('events-body');
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="loader"></div></div></td></tr>`;
+    try {
+      const data = await api('/events/');
+      if (!data.length) { tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><i class="fas fa-calendar-times"></i><p>No events found</p></div></td></tr>`; return; }
+      tbody.innerHTML = data.map(e => `
+        <tr>
+          <td>${e.Event_ID}</td>
+          <td><strong>${e.Event_name}</strong></td>
+          <td>${typeBadge(e.Event_Type)}</td>
+          <td>${e.Date}</td>
+          <td>${e.Venue_Name}</td>
+          <td>${e.Organizer_Name}</td>
+          <td><span class="badge ${e.Remaining_Seats > 0 ? 'badge-green' : 'badge-red'}">${e.Remaining_Seats}/${e.Capacity}</span></td>
+          <td>₹${parseFloat(e.Registration_fee).toFixed(0)}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="deleteEvent(${e.Event_ID})"><i class="fas fa-trash"></i></button></td>
+        </tr>`).join('');
+    } catch(e) { toast('Failed to load events: ' + e.message, 'error'); }
+  }
+
+  async function loadVenueOptions() {
+    const venues = await api('/venues/');
+    const s = document.getElementById('ev-venue');
+    s.innerHTML = `<option value="">— Select Venue —</option>` + venues.map(v => `<option value="${v.Venue_ID}">${v.Venue_Name}</option>`).join('');
+  }
+
+  async function loadOrganizerOptions() {
+    const orgs = await api('/organizers/');
+    const s = document.getElementById('ev-organizer');
+    s.innerHTML = `<option value="">— Select Organizer —</option>` + orgs.map(o => `<option value="${o.Organizer_ID}">${o.Name}</option>`).join('');
+  }
+
+  async function submitEvent(e) {
+    e.preventDefault();
+    try {
+      await api('/events/', 'POST', {
+        event_name:       document.getElementById('ev-name').value,
+        event_type:       document.getElementById('ev-type').value,
+        date:             document.getElementById('ev-date').value,
+        time:             document.getElementById('ev-time').value,
+        registration_fee: document.getElementById('ev-fee').value,
+        capacity:         document.getElementById('ev-capacity').value,
+        venue_id:         document.getElementById('ev-venue').value,
+        organizer_id:     document.getElementById('ev-organizer').value,
+        description:      document.getElementById('ev-desc').value,
+      });
+      toast('Event created successfully!');
+      document.getElementById('event-form').reset();
+      loadEvents();
+    } catch(err) { toast(err.message, 'error'); }
+  }
+
+  async function deleteEvent(id) {
+    if (!confirm('Delete this event? All registrations will also be removed.')) return;
+    try { await api('/events/' + id, 'DELETE'); toast('Event deleted'); loadEvents(); }
+    catch(e) { toast(e.message, 'error'); }
+  }
+
+  /* ══════════════════════════════════════════════════════════ */
+  /* STUDENTS                                                   */
+  /* ══════════════════════════════════════════════════════════ */
+  async function loadStudents() {
+    const tbody = document.getElementById('students-body');
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="loader"></div></div></td></tr>`;
+    try {
+      const data = await api('/students/');
+      if (!data.length) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fas fa-users-slash"></i><p>No students found</p></div></td></tr>`; return; }
+      tbody.innerHTML = data.map(s => `
+        <tr>
+          <td>${s.Student_ID}</td>
+          <td><strong>${s.Name}</strong></td>
+          <td>${s.Email}</td>
+          <td>${s.Phone}</td>
+          <td>${s.Department}</td>
+          <td><span class="badge badge-purple">Year ${s.Year}</span></td>
+          <td><button class="btn btn-danger btn-sm" onclick="deleteStudent(${s.Student_ID})"><i class="fas fa-trash"></i></button></td>
+        </tr>`).join('');
+    } catch(e) { toast('Failed to load students: ' + e.message, 'error'); }
+  }
+
+  async function submitStudent(e) {
+    e.preventDefault();
+    try {
+      await api('/students/', 'POST', {
+        name:       document.getElementById('st-name').value,
+        phone:      document.getElementById('st-phone').value,
+        email:      document.getElementById('st-email').value,
+        department: document.getElementById('st-dept').value,
+        year:       document.getElementById('st-year').value,
+      });
+      toast('Student added successfully!');
+      document.getElementById('student-form').reset();
+      loadStudents();
+    } catch(err) { toast(err.message, 'error'); }
+  }
+
+  async function deleteStudent(id) {
+    if (!confirm('Delete this student?')) return;
+    try { await api('/students/' + id, 'DELETE'); toast('Student deleted'); loadStudents(); }
+    catch(e) { toast(e.message, 'error'); }
+  }
+
+  /* ══════════════════════════════════════════════════════════ */
+  /* ORGANIZERS                                                 */
+  /* ══════════════════════════════════════════════════════════ */
+  async function loadOrganizers() {
+    const tbody = document.getElementById('organizers-body');
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="loader"></div></div></td></tr>`;
+    try {
+      const data = await api('/organizers/');
+      if (!data.length) { tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-user-slash"></i><p>No organizers</p></div></td></tr>`; return; }
+      tbody.innerHTML = data.map(o => `
+        <tr>
+          <td>${o.Organizer_ID}</td>
+          <td><strong>${o.Name}</strong></td>
+          <td>${o.Email}</td>
+          <td>${o.Phone}</td>
+          <td>${o.Department}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="deleteOrganizer(${o.Organizer_ID})"><i class="fas fa-trash"></i></button></td>
+        </tr>`).join('');
+    } catch(e) { toast('Failed to load organizers: ' + e.message, 'error'); }
+  }
+
+  async function submitOrganizer(e) {
+    e.preventDefault();
+    try {
+      await api('/organizers/', 'POST', {
+        name:       document.getElementById('org-name').value,
+        email:      document.getElementById('org-email').value,
+        phone:      document.getElementById('org-phone').value,
+        department: document.getElementById('org-dept').value,
+      });
+      toast('Organizer added!');
+      document.getElementById('organizer-form').reset();
+      loadOrganizers();
+    } catch(err) { toast(err.message, 'error'); }
+  }
+
+  async function deleteOrganizer(id) {
+    if (!confirm('Delete this organizer?')) return;
+    try { await api('/organizers/' + id, 'DELETE'); toast('Organizer deleted'); loadOrganizers(); }
+    catch(e) { toast(e.message, 'error'); }
+  }
+
+  /* ══════════════════════════════════════════════════════════ */
+  /* VENUES                                                     */
+  /* ══════════════════════════════════════════════════════════ */
+  async function loadVenues() {
+    const tbody = document.getElementById('venues-body');
+    tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div class="loader"></div></div></td></tr>`;
+    try {
+      const data = await api('/venues/');
+      if (!data.length) { tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><i class="fas fa-building"></i><p>No venues</p></div></td></tr>`; return; }
+      tbody.innerHTML = data.map(v => `
+        <tr>
+          <td>${v.Venue_ID}</td>
+          <td><strong>${v.Venue_Name}</strong></td>
+          <td>${v.Location}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="deleteVenue(${v.Venue_ID})"><i class="fas fa-trash"></i></button></td>
+        </tr>`).join('');
+    } catch(e) { toast('Failed to load venues: ' + e.message, 'error'); }
+  }
+
+  async function submitVenue(e) {
+    e.preventDefault();
+    try {
+      await api('/venues/', 'POST', {
+        venue_name: document.getElementById('vn-name').value,
+        location:   document.getElementById('vn-location').value,
+      });
+      toast('Venue added!');
+      document.getElementById('venue-form').reset();
+      loadVenues();
+    } catch(err) { toast(err.message, 'error'); }
+  }
+
+  async function deleteVenue(id) {
+    if (!confirm('Delete this venue?')) return;
+    try { await api('/venues/' + id, 'DELETE'); toast('Venue deleted'); loadVenues(); }
+    catch(e) { toast(e.message, 'error'); }
+  }
+
+  /* ══════════════════════════════════════════════════════════ */
+  /* REGISTRATIONS                                              */
+  /* ══════════════════════════════════════════════════════════ */
+  async function loadRegistrations() {
+    const tbody = document.getElementById('registrations-body');
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="loader"></div></div></td></tr>`;
+    try {
+      // Load dropdowns
+      const [students, events, regs] = await Promise.all([
+        api('/students/'), api('/events/'), api('/registrations/'),
+      ]);
+      const ss = document.getElementById('reg-student');
+      ss.innerHTML = `<option value="">— Select Student —</option>` + students.map(s => `<option value="${s.Student_ID}">${s.Name} (${s.Department})</option>`).join('');
+      const se = document.getElementById('reg-event');
+      se.innerHTML = `<option value="">— Select Event —</option>` + events.map(e => `<option value="${e.Event_ID}">${e.Event_name} (${e.Remaining_Seats} seats left)</option>`).join('');
+
+      if (!regs.length) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fas fa-clipboard"></i><p>No registrations yet</p></div></td></tr>`; return; }
+      tbody.innerHTML = regs.map(r => `
+        <tr>
+          <td>${r.Registration_ID}</td>
+          <td><strong>${r.Student_Name}</strong></td>
+          <td>${r.Event_name}</td>
+          <td>${r.Registration_Date}</td>
+          <td>${statusBadge(r.Status)}</td>
+          <td>${r.Amount ? `<span class="badge badge-green">₹${parseFloat(r.Amount).toFixed(0)} (${r.Payment_Method})</span>` : '<span class="badge badge-yellow">Unpaid</span>'}</td>
+          <td style="display:flex;gap:6px">
+            <button class="btn btn-success btn-sm" onclick="openStatusModal(${r.Registration_ID})"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-danger btn-sm" onclick="deleteRegistration(${r.Registration_ID})"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>`).join('');
+    } catch(e) { toast('Failed to load registrations: ' + e.message, 'error'); }
+  }
+
+  async function submitRegistration(e) {
+    e.preventDefault();
+    try {
+      await api('/registrations/', 'POST', {
+        student_id: document.getElementById('reg-student').value,
+        event_id:   document.getElementById('reg-event').value,
+        status:     document.getElementById('reg-status').value,
+      });
+      toast('Student registered successfully!');
+      document.getElementById('reg-form').reset();
+      loadRegistrations();
+    } catch(err) { toast(err.message, 'error'); }
+  }
+
+  function openStatusModal(id) {
+    currentRegId = id;
+    document.getElementById('status-modal').classList.add('open');
+  }
+  function closeModal() { document.getElementById('status-modal').classList.remove('open'); }
+
+  async function confirmStatusUpdate() {
+    const status = document.getElementById('modal-status').value;
+    try {
+      await api('/registrations/' + currentRegId, 'PUT', { status });
+      toast(`Status updated to ${status}`);
+      closeModal(); loadRegistrations();
+    } catch(e) { toast(e.message, 'error'); }
+  }
+
+  async function deleteRegistration(id) {
+    if (!confirm('Delete this registration? Seat will be restored.')) return;
+    try { await api('/registrations/' + id, 'DELETE'); toast('Registration deleted, seat restored'); loadRegistrations(); }
+    catch(e) { toast(e.message, 'error'); }
+  }
+
+  /* ══════════════════════════════════════════════════════════ */
+  /* PAYMENTS                                                   */
+  /* ══════════════════════════════════════════════════════════ */
+  async function loadPayments() {
+    const tbody = document.getElementById('payments-body');
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="loader"></div></div></td></tr>`;
+    try {
+      const data = await api('/payments/');
+      if (!data.length) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fas fa-receipt"></i><p>No payments yet</p></div></td></tr>`; return; }
+      tbody.innerHTML = data.map(p => `
+        <tr>
+          <td>${p.Payment_ID}</td>
+          <td><strong>${p.Student_Name}</strong></td>
+          <td>${p.Event_name}</td>
+          <td><strong>₹${parseFloat(p.Amount).toFixed(2)}</strong></td>
+          <td><span class="badge badge-purple">${p.Payment_Method}</span></td>
+          <td>${p.Payment_Date}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="deletePayment(${p.Payment_ID})"><i class="fas fa-trash"></i></button></td>
+        </tr>`).join('');
+    } catch(e) { toast('Failed to load payments: ' + e.message, 'error'); }
+  }
+
+  async function submitPayment(e) {
+    e.preventDefault();
+    try {
+      await api('/payments/', 'POST', {
+        registration_id: document.getElementById('pay-reg').value,
+        amount:          document.getElementById('pay-amount').value,
+        payment_method:  document.getElementById('pay-method').value,
+      });
+      toast('Payment recorded!');
+      document.getElementById('pay-form').reset();
+      loadPayments();
+    } catch(err) { toast(err.message, 'error'); }
+  }
+
+  async function deletePayment(id) {
+    if (!confirm('Delete this payment record?')) return;
+    try { await api('/payments/' + id, 'DELETE'); toast('Payment deleted'); loadPayments(); }
+    catch(e) { toast(e.message, 'error'); }
+  }
+
+  /* ── Init ────────────────────────────────────────────────── */
+  checkServer();
+  loadDashboard();
+  // Pre-load dropdowns for events page
+  loadVenueOptions();
+  loadOrganizerOptions();
+</script>
+
+</body>
+</html>
