@@ -1,0 +1,96 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f7fb;
+    color: #222;
+}
+
+/* Navigation */
+
+nav {
+    background: #14213d;
+    color: white;
+    padding: 20px 50px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav h2 {
+    font-size: 24px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 25px;
+    font-size: 16px;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+
+/* Main container */
+
+.container {
+    width: 90%;
+    max-width: 1100px;
+    margin: 40px auto;
+}
+
+.container > h1 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+
+/* Event cards */
+
+.event-card {
+    background: white;
+
+    padding: 25px;
+    margin-bottom: 25px;
+
+    border-radius: 10px;
+
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.event-card h2 {
+    color: #14213d;
+    margin-bottom: 15px;
+}
+
+.event-card p {
+    margin-bottom: 8px;
+}
+
+
+/* Register button */
+
+.button {
+    display: inline-block;
+
+    background: #2563eb;
+    color: white;
+
+    padding: 10px 20px;
+
+    text-decoration: none;
+    border-radius: 6px;
+
+    margin-top: 10px;
+}
+
+.button:hover {
+    background: #1d4ed8;
+}

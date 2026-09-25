@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>College Event Registration System</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <nav>
+
+        <h2>College Events</h2>
+
+        <div>
+            <a href="/">Home</a>
+            <a href="/events-page">Events</a>
+            <a href="/register">Register</a>
+            <a href="/registrations">Registrations</a>
+            <a href="/admin">Admin</a>
+        </div>
+
+    </nav>
+
+
+    <div class="container">
+
+        <div class="event-card">
+
+            <h1>College Event Registration System</h1>
+
+            <p>
+                Welcome to the College Event Registration System.
+            </p>
+
+            <p>
+                View available events and register for events easily.
+            </p>
+
+            <br>
+
+            <a class="button" href="/events-page">
+                View Events
+            </a>
+
+            <a class="button" href="/register">
+                Register for an Event
+            </a>
+
+            <a class="button" href="/registrations">
+                View Registrations
+            </a>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

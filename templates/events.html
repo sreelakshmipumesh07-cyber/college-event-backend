@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>College Events</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <nav>
+
+        <h2>College Events</h2>
+
+        <div>
+            <a href="/">Home</a>
+            <a href="/events-page">Events</a>
+            <a href="/register">Register</a>
+            <a href="/registrations">Registrations</a>
+            <a href="/admin">Admin</a>
+        </div>
+
+    </nav>
+
+
+    <div class="container">
+
+        <h1>Available Events</h1>
+
+
+        {% for event in events %}
+
+        <div class="event-card">
+
+            <h2>
+                {{ event.Event_name }}
+            </h2>
+
+            <p>
+                <strong>Description:</strong>
+                {{ event.Description }}
+            </p>
+
+            <p>
+                <strong>Date:</strong>
+                {{ event.Date }}
+            </p>
+
+            <p>
+                <strong>Time:</strong>
+                {{ event.Time }}
+            </p>
+
+            <p>
+                <strong>Event Type:</strong>
+                {{ event.Event_Type }}
+            </p>
+
+            <p>
+                <strong>Registration Fee:</strong>
+                ₹{{ event.Registration_fee }}
+            </p>
+
+            <p>
+                <strong>Capacity:</strong>
+                {{ event.Capacity }}
+            </p>
+
+            <p>
+                <strong>Remaining Seats:</strong>
+                {{ event.Remaining_Seats }}
+            </p>
+
+
+            {% if event.Remaining_Seats > 0 %}
+
+            <a class="button"
+               href="/register?event_id={{ event.Event_ID }}">
+                Register
+            </a>
+
+            {% else %}
+
+            <p>
+                <strong>Event Full</strong>
+            </p>
+
+            {% endif %}
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Registrations</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <nav>
+
+        <h2>College Events</h2>
+
+        <div>
+            <a href="/">Home</a>
+            <a href="/events-page">Events</a>
+            <a href="/register">Register</a>
+            <a href="/registrations">Registrations</a>
+        </div>
+
+    </nav>
+
+
+    <div class="container">
+
+        <h1>All Registrations</h1>
+
+        {% if registrations %}
+
+        <div class="event-card">
+
+            <table border="1" cellpadding="10" cellspacing="0">
+
+                <tr>
+                    <th>Registration ID</th>
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                    <th>Event</th>
+                    <th>Registration Date</th>
+                    <th>Status</th>
+                </tr>
+
+                {% for registration in registrations %}
+
+                <tr>
+
+                    <td>{{ registration.Registration_ID }}</td>
+
+                    <td>{{ registration.Student_ID }}</td>
+
+                    <td>{{ registration.Student_Name }}</td>
+
+                    <td>{{ registration.Event_name }}</td>
+
+                    <td>{{ registration.Registration_Date }}</td>
+
+                    <td>{{ registration.Status }}</td>
+
+                </tr>
+
+                {% endfor %}
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <p>No registrations found.</p>
+
+        {% endif %}
+
+    </div>
+
+</body>
+
+</html>
