@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}
+Manage Students
+{% endblock %}
+
+{% block content %}
+
+<section class="page-header">
+
+    <h1>Students</h1>
+
+    <p>
+        View registered students.
+    </p>
+
+</section>
+
+
+<section class="table-container">
+
+    {% if students %}
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Department</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for student in students %}
+
+            <tr>
+
+                <td>
+                    {{ student.Student_ID }}
+                </td>
+
+                <td>
+                    {{ student.Name }}
+                </td>
+
+                <td>
+                    {{ student.Email }}
+                </td>
+
+                <td>
+                    {{ student.Department }}
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+    <div class="empty-message">
+        <h2>No students found</h2>
+        <p>There are no student records available.</p>
+    </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}

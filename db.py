@@ -1,43 +1,90 @@
 import mysql.connector
-from mysql.connector import Error
 from config import DB_CONFIG
 
 
+# ---------------------------------------------------------
+# DATABASE CONNECTION
+# ---------------------------------------------------------
+
 def get_connection():
-    """Return a new MySQL connection using DB_CONFIG."""
+
     try:
-        conn = mysql.connector.connect(**DB_CONFIG)
-        return conn
-    except Error as e:
-        raise RuntimeError(f"MySQL connection failed: {e}")
+
+        connection = mysql.connector.connect(
+            host=DB_CONFIG["host"],
+            user=DB_CONFIG["user"],
+            password=DB_CONFIG["password"],
+            database=DB_CONFIG["database"],
+            port=DB_CONFIG["port"]
+        )
+
+        return connection
+
+    except mysql.connector.Error as err:
+
+        print("Database connection error:", err)
+
+        return None
 
 
-def query_db(sql, params=None, fetchone=False, commit=False):
-    """
-    Execute a SQL statement and return results.
+# ---------------------------------------------------------
+# DATABASE QUERY
+# ---------------------------------------------------------
 
-    Args:
-        sql      : SQL query string (use %s placeholders).
-        params   : Tuple of query parameters.
-        fetchone : If True, return a single row dict; else a list of dicts.
-        commit   : If True, commit the transaction (INSERT/UPDATE/DELETE).
+def query_db(query, params=None, fetch=True, fetchone=False):
 
-    Returns:
-        dict | list[dict] | int (lastrowid on INSERT/UPDATE)
-    """
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    connection = get_connection()
+
+    if connection is None:
+        return None
+
+    cursor = connection.cursor(dictionary=True)
+
     try:
-        cursor.execute(sql, params or ())
-        if commit:
-            conn.commit()
-            return cursor.lastrowid if cursor.lastrowid else cursor.rowcount
+
+        # Execute query
+        cursor.execute(
+            query,
+            params or ()
+        )
+
+        # ---------------------------------------------
+        # SELECT ONE ROW
+        # ---------------------------------------------
+
         if fetchone:
-            return cursor.fetchone()
-        return cursor.fetchall()
-    except Error as e:
-        conn.rollback()
-        raise e
+
+            result = cursor.fetchone()
+
+            return result
+
+        # ---------------------------------------------
+        # SELECT MULTIPLE ROWS
+        # ---------------------------------------------
+
+        if fetch:
+
+            result = cursor.fetchall()
+
+            return result
+
+        # ---------------------------------------------
+        # INSERT / UPDATE / DELETE
+        # ---------------------------------------------
+
+        connection.commit()
+
+        return True
+
+    except mysql.connector.Error as err:
+
+        print("Database query error:", err)
+
+        connection.rollback()
+
+        return None
+
     finally:
+
         cursor.close()
-        conn.close()
+        connection.close()

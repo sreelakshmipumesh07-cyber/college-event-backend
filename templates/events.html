@@ -1,100 +1,182 @@
-<!DOCTYPE html>
-<html>
+{% extends "base.html" %}
 
-<head>
-    <title>College Events</title>
-
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-
-<body>
-
-    <nav>
-
-        <h2>College Events</h2>
-
-        <div>
-            <a href="/">Home</a>
-            <a href="/events-page">Events</a>
-            <a href="/register">Register</a>
-            <a href="/registrations">Registrations</a>
-            <a href="/admin">Admin</a>
-        </div>
-
-    </nav>
+{% block title %}
+Events | College Events
+{% endblock %}
 
 
-    <div class="container">
+{% block content %}
 
-        <h1>Available Events</h1>
+<section class="events-page">
 
+    <!-- PAGE HEADER -->
 
-        {% for event in events %}
+    <div class="events-header">
 
-        <div class="event-card">
+        <p class="section-label">
+            COLLEGE EVENTS
+        </p>
 
-            <h2>
-                {{ event.Event_name }}
-            </h2>
+        <h1>
+            Upcoming Events
+        </h1>
 
-            <p>
-                <strong>Description:</strong>
-                {{ event.Description }}
-            </p>
-
-            <p>
-                <strong>Date:</strong>
-                {{ event.Date }}
-            </p>
-
-            <p>
-                <strong>Time:</strong>
-                {{ event.Time }}
-            </p>
-
-            <p>
-                <strong>Event Type:</strong>
-                {{ event.Event_Type }}
-            </p>
-
-            <p>
-                <strong>Registration Fee:</strong>
-                ₹{{ event.Registration_fee }}
-            </p>
-
-            <p>
-                <strong>Capacity:</strong>
-                {{ event.Capacity }}
-            </p>
-
-            <p>
-                <strong>Remaining Seats:</strong>
-                {{ event.Remaining_Seats }}
-            </p>
-
-
-            {% if event.Remaining_Seats > 0 %}
-
-            <a class="button"
-               href="/register?event_id={{ event.Event_ID }}">
-                Register
-            </a>
-
-            {% else %}
-
-            <p>
-                <strong>Event Full</strong>
-            </p>
-
-            {% endif %}
-
-        </div>
-
-        {% endfor %}
+        <p>
+            Explore upcoming technical, cultural and academic events
+            and register for the ones you love.
+        </p>
 
     </div>
 
-</body>
 
-</html>
+    <!-- EVENTS GRID -->
+
+    <div class="events-grid">
+
+        {% if events %}
+
+            {% for event in events %}
+
+            <div class="event-card">
+
+                <div class="event-card-top">
+
+                    <span class="event-type">
+                        {{ event.Event_Type }}
+                    </span>
+
+                    {% if event.Remaining_Seats > 0 %}
+                        <span class="seats available">
+                            {{ event.Remaining_Seats }} seats left
+                        </span>
+                    {% else %}
+                        <span class="seats full">
+                            Full
+                        </span>
+                    {% endif %}
+
+                </div>
+
+
+                <h2>
+                    {{ event.Event_name }}
+                </h2>
+
+
+                {% if event.Description %}
+
+                <p class="event-description">
+                    {{ event.Description }}
+                </p>
+
+                {% endif %}
+
+
+                <div class="event-info">
+
+                    <div class="info-item">
+
+                        <span class="info-icon">
+                            📅
+                        </span>
+
+                        <div>
+                            <small>Date</small>
+                            <strong>{{ event.Event_Date }}</strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-item">
+
+                        <span class="info-icon">
+                            🕐
+                        </span>
+
+                        <div>
+                            <small>Time</small>
+                            <strong>{{ event.Event_Time }}</strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-item">
+
+                        <span class="info-icon">
+                            💰
+                        </span>
+
+                        <div>
+                            <small>Registration Fee</small>
+                            <strong>₹{{ event.Registration_Fee }}</strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-item">
+
+                        <span class="info-icon">
+                            👥
+                        </span>
+
+                        <div>
+                            <small>Capacity</small>
+                            <strong>{{ event.Capacity }}</strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- REGISTER BUTTON -->
+
+                {% if event.Remaining_Seats > 0 %}
+
+                <a
+                    href="/register?event_id={{ event.Event_ID }}"
+                    class="event-register-btn"
+                >
+                    Register Now
+                    <span>→</span>
+                </a>
+
+                {% else %}
+
+                <button
+                    class="event-register-btn disabled"
+                    disabled
+                >
+                    Event Full
+                </button>
+
+                {% endif %}
+
+            </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="empty-message">
+
+                <h2>
+                    No events available
+                </h2>
+
+                <p>
+                    There are currently no upcoming events.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+{% endblock %}

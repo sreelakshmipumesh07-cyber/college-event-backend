@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}
+Manage Venues
+{% endblock %}
+
+{% block content %}
+
+<section class="page-header">
+
+    <h1>Venues</h1>
+
+    <p>
+        View and manage event venues.
+    </p>
+
+</section>
+
+
+<section class="table-container">
+
+    {% if venues %}
+
+    <table>
+
+        <thead>
+
+            <tr>
+                <th>Venue ID</th>
+                <th>Venue Name</th>
+                <th>Location</th>
+                <th>Capacity</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for venue in venues %}
+
+            <tr>
+
+                <td>
+                    {{ venue.Venue_ID }}
+                </td>
+
+                <td>
+                    {{ venue.Venue_Name }}
+                </td>
+
+                <td>
+                    {{ venue.Location|default("Not specified") }}
+                </td>
+
+                <td>
+                    {{ venue.Capacity|default("Not specified") }}
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+    <div class="empty-message">
+
+        <h2>No venues found</h2>
+
+        <p>
+            There are currently no venue records.
+        </p>
+
+    </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}

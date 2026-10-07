@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}
+Manage Registrations
+{% endblock %}
+
+{% block content %}
+
+<section class="page-header">
+
+    <h1>Registrations</h1>
+
+    <p>
+        View all student event registrations.
+    </p>
+
+</section>
+
+
+<section class="table-container">
+
+    {% if registrations %}
+
+    <table>
+
+        <thead>
+
+            <tr>
+                <th>Registration ID</th>
+                <th>Student ID</th>
+                <th>Event ID</th>
+                <th>Status</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for registration in registrations %}
+
+            <tr>
+
+                <td>
+                    {{ registration.Registration_ID }}
+                </td>
+
+                <td>
+                    {{ registration.Student_ID }}
+                </td>
+
+                <td>
+                    {{ registration.Event_ID }}
+                </td>
+
+                <td>
+                    {{ registration.Status|default("Registered") }}
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+    <div class="empty-message">
+
+        <h2>No registrations found</h2>
+
+        <p>
+            There are currently no registrations.
+        </p>
+
+    </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}

@@ -1,210 +1,333 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-
-    <title>Event Registration</title>
-
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
-
-</head>
+{% extends "base.html" %}
 
 
-<body>
+{% block title %}
+Register | College Events
+{% endblock %}
 
 
-    <!-- ==============================
-         NAVIGATION BAR
-    =============================== -->
+{% block content %}
 
-    <nav>
+<section class="register-page">
 
-        <h2>
-            College Events
-        </h2>
+    <div class="register-card">
 
 
-        <div>
+        <!-- ==========================================
+             PAGE HEADER
+        =========================================== -->
 
-            <a href="/">
-                Home
-            </a>
+        <div class="register-header">
 
-            <a href="/events-page">
-                Events
-            </a>
+            <p class="section-label">
+                EVENT REGISTRATION
+            </p>
 
-            <a href="/registrations">
-                Registrations
-            </a>
+            <h1>
+                Student Registration
+            </h1>
 
-            <a href="/admin">
-                Admin
-            </a>
+            <p>
+                Enter your details below to register for this event.
+            </p>
 
         </div>
 
-    </nav>
+
+        {% if event %}
 
 
+        <!-- ==========================================
+             ERROR MESSAGE
+        =========================================== -->
 
-    <!-- ==============================
-         MAIN CONTENT
-    =============================== -->
+        {% if error %}
 
-    <div class="container">
+        <div class="registration-error">
 
+            ⚠️ {{ error }}
 
-        <h1>
-            Event Registration
-        </h1>
+        </div>
 
+        {% endif %}
 
 
-        <!-- ==============================
+        <!-- ==========================================
              SELECTED EVENT
-        =============================== -->
+        =========================================== -->
 
-        <div class="event-card">
-
-
-            <h2>
-                {{ event.Event_name }}
-            </h2>
+        <div class="selected-event">
 
 
-            <p>
+            <!-- EVENT NAME + PRICE -->
 
-                <strong>
-                    Description:
-                </strong>
+            <div class="selected-event-heading">
 
-                {{ event.Description }}
+                <div>
 
-            </p>
+                    <span class="event-type">
 
+                        {{ event.get('Event_Type', 'EVENT') }}
 
-            <p>
-
-                <strong>
-                    Date:
-                </strong>
-
-                {{ event.Date }}
-
-            </p>
+                    </span>
 
 
-            <p>
+                    <h2>
 
-                <strong>
-                    Time:
-                </strong>
+                        {{ event.get('Event_Name', 'College Event') }}
 
-                {{ event.Time }}
+                    </h2>
 
-            </p>
+                </div>
 
 
-            <p>
+                <!-- PRICE -->
 
-                <strong>
-                    Event Type:
-                </strong>
+                <div class="event-fee">
 
-                {{ event.Event_Type }}
+                    {% if event.get('Registration_Fee') is not none %}
 
-            </p>
+                        ₹{{ "%.2f"|format(event.get('Registration_Fee')) }}
+
+                    {% else %}
+
+                        Free
+
+                    {% endif %}
+
+                </div>
+
+            </div>
 
 
-            <p>
+            <!-- EVENT DESCRIPTION -->
 
-                <strong>
-                    Registration Fee:
-                </strong>
+            {% if event.get('Description') %}
 
-                ₹{{ event.Registration_fee }}
+            <p class="event-description">
+
+                {{ event.get('Description') }}
 
             </p>
 
-
-            <p>
-
-                <strong>
-                    Capacity:
-                </strong>
-
-                {{ event.Capacity }}
-
-            </p>
+            {% endif %}
 
 
-            <p>
+            <!-- ======================================
+                 EVENT INFORMATION
+            ======================================= -->
 
-                <strong>
-                    Remaining Seats:
-                </strong>
-
-                {{ event.Remaining_Seats }}
-
-            </p>
+            <div class="selected-event-info">
 
 
-        </div>
+                <!-- DATE -->
 
+                <div class="selected-info-item">
 
+                    <span class="info-icon">
+                        📅
+                    </span>
 
-        <!-- ==============================
-             STUDENT REGISTRATION
-        =============================== -->
+                    <div>
 
-        <div class="event-card">
-
-
-            <h2>
-                Student Details
-            </h2>
-
-
-            <p>
-                Enter your Student ID to register
-                for this event.
-            </p>
-
-
-            <form method="POST"
-                  action="/register">
-
-
-                <!--
-                    Keep the selected event.
-                    The user does NOT have to
-                    select the event again.
-                -->
-
-                <input
-                    type="hidden"
-                    name="event_id"
-                    value="{{ event.Event_ID }}"
-                >
-
-
-
-                <!-- ==============================
-                     STUDENT ID
-                =============================== -->
-
-                <p>
-
-                    <label for="student_id">
+                        <small>
+                            Date
+                        </small>
 
                         <strong>
-                            Student ID
+
+                            {% if event.get('Event_Date') %}
+
+                                {{ event.get('Event_Date') }}
+
+                            {% else %}
+
+                                Not specified
+
+                            {% endif %}
+
                         </strong>
 
-                    </label>
+                    </div>
 
+                </div>
+
+
+                <!-- TIME -->
+
+                <div class="selected-info-item">
+
+                    <span class="info-icon">
+                        ⏰
+                    </span>
+
+                    <div>
+
+                        <small>
+                            Time
+                        </small>
+
+                        <strong>
+
+                            {% if event.get('Event_Time') %}
+
+                                {{ event.get('Event_Time') }}
+
+                            {% else %}
+
+                                Not specified
+
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CAPACITY -->
+
+                <div class="selected-info-item">
+
+                    <span class="info-icon">
+                        🎟️
+                    </span>
+
+                    <div>
+
+                        <small>
+                            Capacity
+                        </small>
+
+                        <strong>
+
+                            {% if event.get('Capacity') is not none %}
+
+                                {{ event.get('Capacity') }}
+
+                            {% else %}
+
+                                Not specified
+
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- REMAINING SEATS -->
+
+                <div class="selected-info-item">
+
+                    <span class="info-icon">
+                        🪑
+                    </span>
+
+                    <div>
+
+                        <small>
+                            Seats Remaining
+                        </small>
+
+                        <strong>
+
+                            {% if event.get('Remaining_Seats') is not none %}
+
+                                {{ event.get('Remaining_Seats') }}
+
+                            {% else %}
+
+                                Not specified
+
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- REGISTRATION FEE -->
+
+                <div class="selected-info-item">
+
+                    <span class="info-icon">
+                        💰
+                    </span>
+
+                    <div>
+
+                        <small>
+                            Registration Fee
+                        </small>
+
+                        <strong>
+
+                            {% if event.get('Registration_Fee') is not none %}
+
+                                ₹{{ "%.2f"|format(event.get('Registration_Fee')) }}
+
+                            {% else %}
+
+                                Free
+
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+        <!-- ==========================================
+             STUDENT DETAILS
+        =========================================== -->
+
+        <div class="student-section">
+
+
+            <div class="student-section-header">
+
+                <h2>
+                    Student Details
+                </h2>
+
+                <p class="form-description">
+
+                    Please enter your details accurately.
+                    This information will be stored in the database
+                    along with your event registration.
+
+                </p>
+
+            </div>
+
+
+            <!-- ======================================
+                 STUDENT FORM
+            ======================================= -->
+
+            <form method="POST">
+
+
+                <!-- STUDENT ID -->
+
+                <div class="form-group">
+
+                    <label for="student_id">
+                        Student ID
+                    </label>
 
                     <input
                         type="number"
@@ -214,53 +337,179 @@
                         required
                     >
 
-                </p>
+                </div>
 
 
+                <!-- STUDENT NAME -->
 
-                <br>
+                <div class="form-group">
+
+                    <label for="name">
+                        Student Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        placeholder="Enter your full name"
+                        required
+                    >
+
+                </div>
 
 
+                <!-- EMAIL -->
 
-                <!-- ==============================
-                     REGISTER BUTTON
-                =============================== -->
+                <div class="form-group">
 
-                <button
-                    type="submit"
-                    class="button">
+                    <label for="email">
+                        Email
+                    </label>
 
-                    Register for {{ event.Event_name }}
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="Enter your email address"
+                        required
+                    >
 
-                </button>
+                </div>
+
+
+                <!-- PHONE -->
+
+                <div class="form-group">
+
+                    <label for="phone">
+                        Phone Number
+                    </label>
+
+                    <input
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        placeholder="Enter your phone number"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- CLASS ID -->
+
+                <div class="form-group">
+
+                    <label for="class_id">
+                        Class ID
+                    </label>
+
+                    <input
+                        type="text"
+                        id="class_id"
+                        name="class_id"
+                        placeholder="Enter your Class ID"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- DEPARTMENT -->
+
+                <div class="form-group">
+
+                    <label for="department">
+                        Department
+                    </label>
+
+                    <input
+                        type="text"
+                        id="department"
+                        name="department"
+                        placeholder="Enter your department"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- ==================================
+                     BUTTONS
+                =================================== -->
+
+                <div class="registration-actions">
+
+
+                    <a
+                        href="/events-page"
+                        class="btn secondary-btn"
+                    >
+                        ← Back to Events
+                    </a>
+
+
+                    <button
+                        type="submit"
+                        class="btn"
+                    >
+                        Register for Event
+                    </button>
+
+
+                </div>
 
 
             </form>
 
-
         </div>
 
 
+        {% else %}
 
-        <!-- ==============================
-             BACK BUTTON
-        =============================== -->
 
-        <div style="text-align:center;">
+        <!-- ==========================================
+             EVENT NOT FOUND
+        =========================================== -->
 
-            <a class="button"
-               href="/events-page">
+        <div class="empty-message">
 
+            <h2>
+                Event Not Found
+            </h2>
+
+            <p>
+                The selected event could not be found.
+            </p>
+
+            <a
+                href="/events-page"
+                class="btn"
+            >
                 Back to Events
-
             </a>
 
         </div>
 
 
+        {% endif %}
+
     </div>
 
 
-</body>
+    <!-- ==========================================
+         BACK TO EVENTS
+    =========================================== -->
 
-</html>
+    <div class="back-link">
+
+        <a href="/events-page">
+            ← Back to Events
+        </a>
+
+    </div>
+
+</section>
+
+{% endblock %}

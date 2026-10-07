@@ -1,0 +1,77 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        {% block title %}
+        College Event Registration System
+        {% endblock %}
+    </title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+
+        <div class="logo">
+            College Events
+        </div>
+
+        <div class="nav-links">
+
+            <a href="/">
+                Home
+            </a>
+
+            <a href="/events-page">
+                Events
+            </a>
+
+            <a href="/register">
+                Register
+            </a>
+
+            <a href="/registrations">
+                Registrations
+            </a>
+
+            <a href="/admin">
+                Admin
+            </a>
+
+        </div>
+
+    </nav>
+
+
+    <!-- PAGE CONTENT -->
+    <main>
+
+        {% block content %}
+        {% endblock %}
+
+    </main>
+
+
+    <!-- FOOTER -->
+    <footer>
+
+        <p>
+            College Event Registration System
+        </p>
+
+    </footer>
+
+</body>
+
+</html>

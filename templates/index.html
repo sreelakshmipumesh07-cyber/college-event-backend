@@ -1,62 +1,82 @@
-<!DOCTYPE html>
-<html>
+{% extends "base.html" %}
 
-<head>
-    <title>College Event Registration System</title>
+{% block title %}
+Home | College Events
+{% endblock %}
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
-</head>
+{% block content %}
 
-<body>
+<section class="hero">
 
-    <nav>
+    <div class="hero-content">
 
-        <h2>College Events</h2>
+        <p class="small-title">
+            COLLEGE EVENT REGISTRATION SYSTEM
+        </p>
 
-        <div>
-            <a href="/">Home</a>
-            <a href="/events-page">Events</a>
-            <a href="/register">Register</a>
-            <a href="/registrations">Registrations</a>
-            <a href="/admin">Admin</a>
-        </div>
+        <h1>
+            Discover.
+            <span>Register.</span>
+            Experience.
+        </h1>
 
-    </nav>
+        <p class="hero-text">
+            Explore upcoming college events and register
+            for the events you love.
+        </p>
 
-
-    <div class="container">
-
-        <div class="event-card">
-
-            <h1>College Event Registration System</h1>
-
-            <p>
-                Welcome to the College Event Registration System.
-            </p>
-
-            <p>
-                View available events and register for events easily.
-            </p>
-
-            <br>
-
-            <a class="button" href="/events-page">
-                View Events
-            </a>
-
-            <a class="button" href="/register">
-                Register for an Event
-            </a>
-
-            <a class="button" href="/registrations">
-                View Registrations
-            </a>
-
-        </div>
+        <a href="/events-page" class="btn">
+            Explore Events
+        </a>
 
     </div>
 
-</body>
+</section>
 
-</html>
+
+<section class="features">
+
+    <div class="feature-card">
+
+        <h3>
+            🎯 Discover Events
+        </h3>
+
+        <p>
+            Find workshops, competitions, seminars,
+            technical events and cultural programs.
+        </p>
+
+    </div>
+
+
+    <div class="feature-card">
+
+        <h3>
+            📝 Easy Registration
+        </h3>
+
+        <p>
+            Register for your favourite college events
+            quickly and easily.
+        </p>
+
+    </div>
+
+
+    <div class="feature-card">
+
+        <h3>
+            📋 Track Registrations
+        </h3>
+
+        <p>
+            View your registered events and
+            payment status in one place.
+        </p>
+
+    </div>
+
+</section>
+
+{% endblock %}

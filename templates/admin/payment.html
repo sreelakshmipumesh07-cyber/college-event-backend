@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}
+Manage Payments
+{% endblock %}
+
+{% block content %}
+
+<section class="page-header">
+
+    <h1>Payments</h1>
+
+    <p>
+        View payment records for event registrations.
+    </p>
+
+</section>
+
+
+<section class="table-container">
+
+    {% if payments %}
+
+    <table>
+
+        <thead>
+
+            <tr>
+                <th>Payment ID</th>
+                <th>Registration ID</th>
+                <th>Amount</th>
+                <th>Payment Method</th>
+                <th>Status</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for payment in payments %}
+
+            <tr>
+
+                <td>
+                    {{ payment.Payment_ID }}
+                </td>
+
+                <td>
+                    {{ payment.Registration_ID }}
+                </td>
+
+                <td>
+                    ₹{{ payment.Amount }}
+                </td>
+
+                <td>
+                    {{ payment.Payment_Method }}
+                </td>
+
+                <td>
+                    {{ payment.Status }}
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+    <div class="empty-message">
+
+        <h2>No payments found</h2>
+
+        <p>
+            There are currently no payment records.
+        </p>
+
+    </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}

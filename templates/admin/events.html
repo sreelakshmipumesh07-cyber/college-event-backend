@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}
+Manage Events
+{% endblock %}
+
+{% block content %}
+
+<section class="page-header">
+
+    <h1>Manage Events</h1>
+
+    <p>
+        View and manage college events.
+    </p>
+
+</section>
+
+
+<section class="table-container">
+
+    {% if events %}
+
+    <table>
+
+        <thead>
+
+            <tr>
+                <th>Event ID</th>
+                <th>Event Name</th>
+                <th>Date</th>
+                <th>Fee</th>
+                <th>Capacity</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for event in events %}
+
+            <tr>
+
+                <td>
+                    {{ event.Event_ID }}
+                </td>
+
+                <td>
+                    {{ event.Event_Name }}
+                </td>
+
+                <td>
+                    {{ event.Event_Date }}
+                </td>
+
+                <td>
+                    ₹{{ event.Registration_Fee }}
+                </td>
+
+                <td>
+                    {{ event.Capacity }}
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+    <div class="empty-message">
+
+        <h2>No events found</h2>
+
+        <p>
+            There are currently no events available.
+        </p>
+
+    </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}
