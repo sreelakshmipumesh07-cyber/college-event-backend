@@ -1,0 +1,191 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Successful</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px 16px;
+            font-family: Arial, sans-serif;
+            background: #f3f6fb;
+            color: #172033;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 40px auto;
+            padding: 35px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .success-icon {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            background: #dcfce7;
+            color: #15803d;
+            font-size: 42px;
+            line-height: 70px;
+            text-align: center;
+        }
+
+        h1 {
+            text-align: center;
+            color: #166534;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #667085;
+            margin-bottom: 30px;
+        }
+
+        .details {
+            padding: 22px;
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+
+        .details p {
+            margin: 13px 0;
+            line-height: 1.5;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: #dcfce7;
+            color: #166534;
+            font-weight: bold;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 28px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 20px;
+            border-radius: 7px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .btn.secondary {
+            background: #e8edf5;
+            color: #172033;
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                padding: 22px;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="success-icon">✓</div>
+
+        <h1>Registration Successful!</h1>
+
+        <p class="subtitle">
+            Your event registration has been confirmed.
+        </p>
+
+        <div class="details">
+            <p>
+                <strong>Event:</strong>
+                {{ details.Event_name }}
+            </p>
+
+            <p>
+                <strong>Student:</strong>
+                {{ details.Name }}
+            </p>
+
+            <p>
+                <strong>Email:</strong>
+                {{ details.Email }}
+            </p>
+
+            <p>
+                <strong>Registration ID:</strong>
+                {{ details.Registration_ID }}
+            </p>
+
+            <p>
+                <strong>Event Date:</strong>
+                {{ details.Date }}
+            </p>
+
+            <p>
+                <strong>Event Time:</strong>
+                {{ details.Time }}
+            </p>
+
+            <p>
+                <strong>Registration Fee:</strong>
+                ₹{{ details.Registration_fee }}
+            </p>
+
+            <p>
+                <strong>Status:</strong>
+                <span class="status">{{ details.Status }}</span>
+            </p>
+
+            {% if details.Payment_Method %}
+            <p>
+                <strong>Payment Method:</strong>
+                {{ details.Payment_Method }}
+            </p>
+
+            <p>
+                <strong>Payment Date:</strong>
+                {{ details.Payment_Date }}
+            </p>
+            {% endif %}
+        </div>
+
+        <div class="buttons">
+            <a href="/events-page" class="btn">
+    Explore More Events
+            </a>
+
+            <a href="/" class="btn secondary">
+                Back to Home
+            </a>
+        </div>
+
+    </div>
+</body>
+</html>

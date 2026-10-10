@@ -1,0 +1,150 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Login</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f3f6fb;
+            font-family: Arial, sans-serif;
+        }
+
+        .login-card {
+            width: 90%;
+            max-width: 420px;
+            padding: 35px;
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 12px 40px rgba(20, 45, 89, 0.12);
+        }
+
+        .lock {
+            text-align: center;
+            font-size: 45px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #142d59;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin: 16px 0 7px;
+            font-weight: bold;
+            color: #263954;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 24px;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            background: #2864ed;
+            color: white;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #174dcc;
+        }
+
+        .error {
+            color: #b42318;
+            background: #fef2f2;
+            padding: 10px;
+            border-radius: 7px;
+        }
+
+        .success {
+            color: #15803d;
+        }
+
+        .back-link {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+            color: #2864ed;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-card">
+        <div class="lock">🔐</div>
+
+        <h1>Admin Login</h1>
+        <p class="subtitle">
+            Sign in to manage college events.
+        </p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <p class="{{ 'success' if category == 'success' else 'error' }}">
+                    {{ message }}
+                </p>
+            {% endfor %}
+        {% endwith %}
+
+        <form method="POST"
+              action="{{ url_for('admin_auth.login') }}">
+
+            <input type="hidden" name="next" value="{{ next_url }}">
+
+            <label for="username">Username</label>
+            <input
+                type="text"
+                id="username"
+                name="username"
+                autocomplete="username"
+                required
+            >
+
+            <label for="password">Password</label>
+            <input
+                type="password"
+                id="password"
+                name="password"
+                autocomplete="current-password"
+                required
+            >
+
+            <button type="submit">Unlock Admin Panel</button>
+        </form>
+
+        <a class="back-link" href="/">Back to Home</a>
+    </div>
+</body>
+</html>
+```

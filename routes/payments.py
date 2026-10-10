@@ -1,122 +1,213 @@
-from flask import Blueprint, request, jsonify
-from db import query_db
-from mysql.connector import Error
 
-payments_bp = Blueprint("payments", __name__, url_prefix="/payments")
+from flask import Blueprint, render_template, request, redirect, url_for
+from db import get_connection
+from decimal import Decimal
 
-VALID_METHODS = {"Cash", "UPI", "Card", "Net Banking"}
+payments_bp = Blueprint("payments", __name__)
 
-
-# ── GET /payments ─────────────────────────────────────────────
-@payments_bp.get("/")
-def get_all_payments():
-    """Fetch all payments (including student and event info) and return them as JSON.
-    Handles database errors and returns a 500 status code on failure.
-    """
-    try:
-        rows = query_db(
-            """SELECT p.*, s.Name AS Student_Name, e.Event_name
-               FROM PAYMENT p
-               JOIN REGISTRATION r ON p.Registration_ID = r.Registration_ID
-               JOIN STUDENT       s ON r.Student_ID      = s.Student_ID
-               JOIN EVENT         e ON r.Event_ID         = e.Event_ID
-               ORDER BY p.Payment_Date DESC"""
-        )
-        return jsonify(rows), 200
-    except Error as e:
-        # Unexpected DB error – respond with a generic server error
-        return jsonify({"error": str(e)}), 500
+ALLOWED_METHODS = {"Cash", "UPI", "Card", "Net Banking"}
 
 
-# ── GET /payments/<id> ────────────────────────────────────────
-@payments_bp.get("/<int:payment_id>")
-def get_payment(payment_id):
-    row = query_db(
-        """SELECT p.*, s.Name AS Student_Name, s.Email AS Student_Email,
-                  e.Event_name, e.Date AS Event_Date
-           FROM PAYMENT p
-           JOIN REGISTRATION r ON p.Registration_ID = r.Registration_ID
-           JOIN STUDENT       s ON r.Student_ID      = s.Student_ID
-           JOIN EVENT         e ON r.Event_ID         = e.Event_ID
-           WHERE p.Payment_ID = %s""",
-        (payment_id,), fetchone=True,
-    )
-    if not row:
-        return jsonify({"error": "Payment not found"}), 404
-    return jsonify(row), 200
+@payments_bp.route("/payment/<int:registration_id>", methods=["GET", "POST"])
+def payment_page(registration_id):
+    conn = get_connection()
 
+    if conn is None:
+        return "Database connection failed", 500
 
-# ── POST /payments ────────────────────────────────────────────
-@payments_bp.post("/")
-def create_payment():
-    data = request.get_json()
-    required = ["registration_id", "amount", "payment_method"]
-    missing = [f for f in required if f not in data]
-    if missing:
-        return jsonify({"error": f"Missing fields: {missing}"}), 400
-
-    if data["payment_method"] not in VALID_METHODS:
-        return jsonify({"error": f"payment_method must be one of {VALID_METHODS}"}), 400
-
-    # Confirm the registration exists
-    reg = query_db(
-        "SELECT Registration_ID FROM REGISTRATION WHERE Registration_ID = %s",
-        (int(data["registration_id"]),), fetchone=True,
-    )
-    if not reg:
-        return jsonify({"error": "Registration not found"}), 404
+    cursor = conn.cursor(dictionary=True)
+    details = None
 
     try:
-        new_id = query_db(
-            """INSERT INTO PAYMENT (Amount, Payment_Date, Payment_Method, Registration_ID)
-               VALUES (%s, CURDATE(), %s, %s)""",
-            (float(data["amount"]), data["payment_method"], int(data["registration_id"])),
-            commit=True,
+        # Get registration and event details
+        cursor.execute(
+            """
+            SELECT r.Registration_ID, r.Status,
+                   s.Name, s.Email,
+                   e.Event_name, e.Registration_fee
+            FROM registration r
+            JOIN student s ON s.Student_ID = r.Student_ID
+            JOIN event e ON e.Event_ID = r.Event_ID
+            WHERE r.Registration_ID = %s
+            """,
+            (registration_id,)
         )
-        return jsonify({"message": "Payment recorded", "Payment_ID": new_id}), 201
-    except Error as e:
-        if "Duplicate" in str(e) or "unique" in str(e).lower():
-            return jsonify({"error": "Payment already exists for this registration"}), 409
-        return jsonify({"error": str(e)}), 500
+
+        details = cursor.fetchone()
+
+        if not details:
+            return "Registration not found.", 404
+
+        if details["Status"] == "Confirmed":
+            return redirect(
+                url_for(
+                    "payments.registration_success",
+                    registration_id=registration_id
+                )
+            )
+
+        if details["Status"] != "Pending":
+            return "This registration cannot be paid for.", 400
+
+        amount = Decimal(str(details["Registration_fee"]))
+
+        if amount <= 0:
+            return "This event does not require payment.", 400
+
+        # Display payment page
+        if request.method == "GET":
+            details["Amount"] = amount
+            return render_template(
+                "payment.html",
+                details=details
+            )
+
+        # Validate payment method
+        method = request.form.get("payment_method", "").strip()
+
+        if method not in ALLOWED_METHODS:
+            details["Amount"] = amount
+
+            return render_template(
+                "payment.html",
+                details=details,
+                error="Please select a valid payment method."
+            ), 400
+
+        # Clear the transaction from the initial SELECT.
+        # Start a fresh transaction for the payment operation.
+        conn.rollback()
+        conn.start_transaction()
+
+        # Lock registration to prevent duplicate confirmation
+        cursor.execute(
+            """
+            SELECT Status
+            FROM registration
+            WHERE Registration_ID = %s
+            FOR UPDATE
+            """,
+            (registration_id,)
+        )
+
+        current = cursor.fetchone()
+
+        if not current:
+            conn.rollback()
+            return "Registration not found.", 404
+
+        if current["Status"] == "Confirmed":
+            conn.rollback()
+
+            return redirect(
+                url_for(
+                    "payments.registration_success",
+                    registration_id=registration_id
+                )
+            )
+
+        if current["Status"] != "Pending":
+            conn.rollback()
+            return "This registration cannot be paid for.", 400
+
+        # Record the simulated payment
+        cursor.execute(
+            """
+            INSERT INTO payment
+                (Amount, Payment_Method, Registration_ID)
+            VALUES (%s, %s, %s)
+            """,
+            (amount, method, registration_id)
+        )
+
+        # Confirm registration
+        cursor.execute(
+            """
+            UPDATE registration
+            SET Status = 'Confirmed'
+            WHERE Registration_ID = %s
+            """,
+            (registration_id,)
+        )
+
+        # Save payment and confirmation together
+        conn.commit()
+
+        return redirect(
+            url_for(
+                "payments.registration_success",
+                registration_id=registration_id
+            )
+        )
+
+    except Exception as e:
+        conn.rollback()
+        print("Demo payment error:", e)
+
+        if details:
+            details["Amount"] = Decimal(
+                str(details["Registration_fee"])
+            )
+
+        return render_template(
+            "payment.html",
+            details=details,
+            error="Could not complete the demo payment: " + str(e)
+        ), 500
+
+    finally:
+        cursor.close()
+        conn.close()
 
 
-# ── GET /payments/registration/<reg_id> ───────────────────────
-@payments_bp.get("/registration/<int:reg_id>")
-def payment_by_registration(reg_id):
-    row = query_db(
-        "SELECT * FROM PAYMENT WHERE Registration_ID = %s", (reg_id,), fetchone=True
-    )
-    if not row:
-        return jsonify({"error": "No payment found for this registration"}), 404
-    return jsonify(row), 200
+@payments_bp.route("/registration-success/<int:registration_id>")
+def registration_success(registration_id):
+    conn = get_connection()
 
+    if conn is None:
+        return "Database connection failed", 500
 
-# ── GET /payments/event/<event_id>/total ──────────────────────
-@payments_bp.get("/event/<int:event_id>/total")
-def total_revenue_for_event(event_id):
-    """Total revenue collected for a specific event."""
-    row = query_db(
-        """SELECT e.Event_name,
-                  COUNT(p.Payment_ID)  AS Total_Payments,
-                  SUM(p.Amount)        AS Total_Revenue
-           FROM EVENT e
-           LEFT JOIN REGISTRATION r ON e.Event_ID = r.Event_ID
-           LEFT JOIN PAYMENT      p ON r.Registration_ID = p.Registration_ID
-           WHERE e.Event_ID = %s
-           GROUP BY e.Event_ID, e.Event_name""",
-        (event_id,), fetchone=True,
-    )
-    if not row:
-        return jsonify({"error": "Event not found"}), 404
-    return jsonify(row), 200
+    cursor = conn.cursor(dictionary=True)
 
+    try:
+        cursor.execute(
+            """
+            SELECT r.Registration_ID,
+                   r.Registration_Date,
+                   r.Status,
+                   s.Name,
+                   s.Email,
+                   e.Event_name,
+                   e.Date,
+                   e.Time,
+                   e.Registration_fee,
+                   p.Payment_Method,
+                   p.Payment_Date
+            FROM registration r
+            JOIN student s
+                ON s.Student_ID = r.Student_ID
+            JOIN event e
+                ON e.Event_ID = r.Event_ID
+            LEFT JOIN payment p
+                ON p.Registration_ID = r.Registration_ID
+            WHERE r.Registration_ID = %s
+            """,
+            (registration_id,)
+        )
 
-# ── DELETE /payments/<id> ─────────────────────────────────────
-@payments_bp.delete("/<int:payment_id>")
-def delete_payment(payment_id):
-    affected = query_db(
-        "DELETE FROM PAYMENT WHERE Payment_ID = %s", (payment_id,), commit=True
-    )
-    if affected == 0:
-        return jsonify({"error": "Payment not found"}), 404
-    return jsonify({"message": "Payment deleted"}), 200
+        details = cursor.fetchone()
+
+        if not details:
+            return "Registration not found.", 404
+
+        if details["Status"] != "Confirmed":
+            return "This registration is not yet confirmed.", 403
+
+        return render_template(
+            "registration_success.html",
+            details=details
+        )
+
+    finally:
+        cursor.close()
+        conn.close()

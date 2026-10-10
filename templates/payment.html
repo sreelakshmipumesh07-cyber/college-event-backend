@@ -1,0 +1,57 @@
+
+{% extends "base.html" %}
+
+{% block title %}Demo Payment | College Events{% endblock %}
+
+{% block content %}
+<section class="form-container">
+    <div class="form-card">
+        {% if details %}
+            <h1>Complete Registration</h1>
+
+            <div class="payment-summary">
+                <h2>{{ details.Event_name }}</h2>
+                <p><strong>Student:</strong> {{ details.Name }}</p>
+                <p><strong>Registration ID:</strong>
+                    {{ details.Registration_ID }}</p>
+                <p><strong>Amount:</strong>
+                    ₹{{ "%.2f"|format(details.Registration_fee) }}</p>
+            </div>
+
+            {% if error %}
+                <p class="registration-error">{{ error }}</p>
+            {% endif %}
+
+            <p>
+                This is a demonstration payment for your college project.
+                No real money will be transferred.
+            </p>
+
+            <form method="POST">
+                <div class="form-group">
+                    <label for="payment_method">Demo Payment Method</label>
+                    <select id="payment_method" name="payment_method"
+                            required>
+                        <option value="">Choose a method</option>
+                        <option value="Cash">Cash (Demo)</option>
+                        <option value="UPI">UPI (Demo)</option>
+                        <option value="Card">Card (Demo)</option>
+                        <option value="Net Banking">Net Banking (Demo)</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn">
+                    Confirm Demo Payment
+                </button>
+            </form>
+
+            <p class="form-description">
+                Confirmation records a simulated payment in the database.
+            </p>
+        {% else %}
+            <h1>Payment Details Unavailable</h1>
+            <a href="/events-page" class="btn">Back to Events</a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,17 +1,12 @@
-from flask import Blueprint, render_template, request, redirect
+
+from flask import Blueprint, render_template, request, redirect, url_for
 from db import get_connection
 
-registrations_bp = Blueprint(
-    "registrations",
-    __name__
-)
+registrations_bp = Blueprint("registrations", __name__)
 
 
 @registrations_bp.route("/register", methods=["GET", "POST"])
 def register():
-
-    event = None
-
     event_id = request.args.get("event_id")
 
     if not event_id:
@@ -20,266 +15,207 @@ def register():
     conn = get_connection()
 
     if conn is None:
-        return "Database connection failed"
+        return "Database connection failed", 500
 
     cursor = conn.cursor(dictionary=True)
+    event = None
 
     try:
+        # Fetch event details
+        cursor.execute(
+            "SELECT * FROM event WHERE Event_ID = %s",
+            (event_id,)
+        )
+        event = cursor.fetchone()
 
-        print("===================================")
-        print("REGISTER PAGE")
-        print("Event ID received:", event_id)
-        print("===================================")
+        if not event:
+            return render_template(
+                "register.html",
+                event=None,
+                error="Event not found."
+            )
 
-        # Get event
+        if request.method == "GET":
+            return render_template("register.html", event=event)
+
+        # Get student details from the form
+        name = request.form.get("name", "").strip()
+        phone = request.form.get("phone", "").strip()
+        email = request.form.get("email", "").strip()
+        department = request.form.get("department", "").strip()
+        year = request.form.get("year", "").strip()
+
+        if not all([name, phone, email, department, year]):
+            return render_template(
+                "register.html",
+                event=event,
+                error="Please complete all student details."
+            )
+
+        # Validate study year
+        try:
+            year = int(year)
+
+            if year < 1 or year > 6:
+                raise ValueError
+
+        except ValueError:
+            return render_template(
+                "register.html",
+                event=event,
+                error="Enter a valid study year."
+            )
+
+        # Clear the transaction created by the earlier SELECT.
+        # Then begin a fresh transaction for registration.
+        conn.rollback()
+        conn.start_transaction()
+
+        # Lock the event row to prevent overbooking
         cursor.execute(
             """
-            SELECT *
-            FROM event
+            SELECT * FROM event
+            WHERE Event_ID = %s
+            FOR UPDATE
+            """,
+            (event_id,)
+        )
+        event = cursor.fetchone()
+
+        if not event or event["Remaining_Seats"] <= 0:
+            conn.rollback()
+            return render_template(
+                "register.html",
+                event=event,
+                error="This event is full or unavailable."
+            )
+
+        # Find an existing student using email or phone
+        cursor.execute(
+            """
+            SELECT Student_ID, Email, Phone
+            FROM student
+            WHERE Email = %s OR Phone = %s
+            """,
+            (email, phone)
+        )
+        student_rows = cursor.fetchall()
+
+        if len(student_rows) > 1:
+            conn.rollback()
+            return render_template(
+                "register.html",
+                event=event,
+                error=(
+                    "That email and phone belong to "
+                    "different student records."
+                )
+            )
+
+        if student_rows:
+            student = student_rows[0]
+
+            # Prevent using an existing student's email with another phone,
+            # or an existing phone with another email.
+            if student["Email"] != email or student["Phone"] != phone:
+                conn.rollback()
+                return render_template(
+                    "register.html",
+                    event=event,
+                    error=(
+                        "The email or phone already belongs to "
+                        "another student record. Please check your details."
+                    )
+                )
+
+            student_id = student["Student_ID"]
+
+        else:
+            # Create a new student
+            cursor.execute(
+                """
+                INSERT INTO student
+                    (Name, Phone, Email, Department, Year)
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                (name, phone, email, department, year)
+            )
+
+            student_id = cursor.lastrowid
+
+        # Prevent duplicate registration
+        cursor.execute(
+            """
+            SELECT Registration_ID
+            FROM registration
+            WHERE Student_ID = %s AND Event_ID = %s
+            """,
+            (student_id, event_id)
+        )
+
+        if cursor.fetchone():
+            conn.rollback()
+            return render_template(
+                "register.html",
+                event=event,
+                error="This student is already registered for this event."
+            )
+
+        # Create registration
+        fee = event["Registration_fee"]
+
+        status = "Confirmed" if fee == 0 else "Pending"
+
+        cursor.execute(
+            """
+            INSERT INTO registration
+                (Status, Student_ID, Event_ID)
+            VALUES (%s, %s, %s)
+            """,
+            (status, student_id, event_id)
+        )
+
+        registration_id = cursor.lastrowid
+
+        # Reduce the available seat count
+        cursor.execute(
+            """
+            UPDATE event
+            SET Remaining_Seats = Remaining_Seats - 1
             WHERE Event_ID = %s
             """,
             (event_id,)
         )
 
-        event = cursor.fetchone()
+        # Save all registration changes
+        conn.commit()
 
-        print("Event found:", event)
-
-        if not event:
-
-            return render_template(
-                "register.html",
-                event=None,
-                error="Event ID does not exist in the database."
-            )
-
-        # -----------------------------------------
-        # POST
-        # -----------------------------------------
-
-        if request.method == "POST":
-
-            student_id = request.form.get("student_id")
-            name = request.form.get("name")
-            email = request.form.get("email")
-            phone = request.form.get("phone")
-            class_id = request.form.get("class_id")
-            department = request.form.get("department")
-
-            # Validation
-
-            if not student_id:
-                return render_template(
-                    "register.html",
-                    event=event,
-                    error="Student ID is required."
-                )
-
-            if not name:
-                return render_template(
-                    "register.html",
-                    event=event,
-                    error="Student name is required."
-                )
-
-            if not email:
-                return render_template(
-                    "register.html",
-                    event=event,
-                    error="Email is required."
-                )
-
-            if not phone:
-                return render_template(
-                    "register.html",
-                    event=event,
-                    error="Phone number is required."
-                )
-
-            if not class_id:
-                return render_template(
-                    "register.html",
-                    event=event,
-                    error="Class ID is required."
-                )
-
-            if not department:
-                return render_template(
-                    "register.html",
-                    event=event,
-                    error="Department is required."
-                )
-
-            # -----------------------------------------
-            # CHECK STUDENT
-            # -----------------------------------------
-
-            cursor.execute(
-                """
-                SELECT Student_ID
-                FROM student
-                WHERE Student_ID = %s
-                """,
-                (student_id,)
-            )
-
-            existing_student = cursor.fetchone()
-
-            # -----------------------------------------
-            # INSERT STUDENT
-            # -----------------------------------------
-
-            if not existing_student:
-
-                cursor.execute(
-                    """
-                    INSERT INTO student
-                    (
-                        Student_ID,
-                        Name,
-                        Email,
-                        Phone,
-                        Class_ID,
-                        Department
-                    )
-                    VALUES
-                    (
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s
-                    )
-                    """,
-                    (
-                        student_id,
-                        name,
-                        email,
-                        phone,
-                        class_id,
-                        department
-                    )
-                )
-
-            # -----------------------------------------
-            # CHECK DUPLICATE REGISTRATION
-            # -----------------------------------------
-
-            cursor.execute(
-                """
-                SELECT *
-                FROM registration
-                WHERE Student_ID = %s
-                AND Event_ID = %s
-                """,
-                (
-                    student_id,
-                    event_id
+        # Redirect based on registration fee
+        if fee == 0:
+            return redirect(
+                url_for(
+                    "payments.registration_success",
+                    registration_id=registration_id
                 )
             )
 
-            existing_registration = cursor.fetchone()
-
-            if existing_registration:
-
-                conn.rollback()
-
-                return render_template(
-                    "register.html",
-                    event=event,
-                    error="You are already registered for this event."
-                )
-
-            # -----------------------------------------
-            # CHECK SEATS
-            # -----------------------------------------
-
-            if "Remaining_Seats" in event:
-
-                if event["Remaining_Seats"] is not None:
-
-                    if int(event["Remaining_Seats"]) <= 0:
-
-                        conn.rollback()
-
-                        return render_template(
-                            "register.html",
-                            event=event,
-                            error="Sorry, this event is full."
-                        )
-
-            # -----------------------------------------
-            # INSERT REGISTRATION
-            # -----------------------------------------
-
-            cursor.execute(
-                """
-                INSERT INTO registration
-                (
-                    Student_ID,
-                    Event_ID
-                )
-                VALUES
-                (
-                    %s,
-                    %s
-                )
-                """,
-                (
-                    student_id,
-                    event_id
-                )
+        return redirect(
+            url_for(
+                "payments.payment_page",
+                registration_id=registration_id
             )
-
-            # -----------------------------------------
-            # UPDATE SEATS
-            # -----------------------------------------
-
-            if "Remaining_Seats" in event:
-
-                cursor.execute(
-                    """
-                    UPDATE event
-                    SET Remaining_Seats = Remaining_Seats - 1
-                    WHERE Event_ID = %s
-                    AND Remaining_Seats > 0
-                    """,
-                    (event_id,)
-                )
-
-            # Save
-
-            conn.commit()
-
-            return redirect("/registrations-page")
-
-        # -----------------------------------------
-        # GET
-        # -----------------------------------------
-
-        return render_template(
-            "register.html",
-            event=event
         )
 
     except Exception as e:
-
-        if conn:
-            conn.rollback()
-
-        print("===================================")
-        print("REGISTRATION DATABASE ERROR")
-        print(e)
-        print("===================================")
+        conn.rollback()
+        print("Registration error:", e)
 
         return render_template(
             "register.html",
             event=event,
-            error=str(e)
-        )
+            error="Registration failed: " + str(e)
+        ), 500
 
     finally:
-
         cursor.close()
         conn.close()

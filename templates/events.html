@@ -1,182 +1,352 @@
+
 {% extends "base.html" %}
 
-{% block title %}
-Events | College Events
-{% endblock %}
-
+{% block title %}Explore Events{% endblock %}
 
 {% block content %}
 
-<section class="events-page">
+<style>
+    * {
+        box-sizing: border-box;
+    }
 
-    <!-- PAGE HEADER -->
+    .events-page {
+        min-height: 100vh;
+        padding: 45px 5%;
+        background: #f3f6fb;
+        font-family: Arial, sans-serif;
+    }
+
+    .events-header {
+        text-align: center;
+        margin: 0 auto 45px;
+    }
+
+    .events-header h1 {
+        color: #142d59;
+        font-size: 38px;
+        margin-bottom: 12px;
+    }
+
+    .events-header p {
+        color: #64748b;
+        font-size: 17px;
+        line-height: 1.6;
+    }
+
+    .events-grid {
+        max-width: 1450px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 32px;
+    }
+
+    .event-card {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        padding: 30px;
+        background: #ffffff;
+        border: 1px solid #dfe7f2;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(24, 48, 85, 0.07);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .event-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 35px rgba(24, 48, 85, 0.12);
+    }
+
+    .event-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 26px;
+    }
+
+    .event-type {
+        display: inline-block;
+        padding: 10px 14px;
+        border-radius: 25px;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 13px;
+        font-weight: bold;
+    }
+
+    .seats-left {
+        color: #059669;
+        font-size: 13px;
+        font-weight: bold;
+    }
+
+    .seats-full {
+        color: #dc2626;
+        font-size: 13px;
+        font-weight: bold;
+    }
+
+    .event-card h2 {
+        color: #142d59;
+        font-size: 26px;
+        line-height: 1.3;
+        margin: 0 0 18px;
+        overflow-wrap: anywhere;
+    }
+
+    .event-description {
+        color: #64748b;
+        font-size: 15px;
+        line-height: 1.7;
+        margin: 0 0 30px;
+        min-height: 52px;
+        overflow-wrap: anywhere;
+    }
+
+    .event-info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: auto;
+        margin-bottom: 28px;
+    }
+
+    .event-info {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        min-width: 0;
+        min-height: 70px;
+        padding: 14px;
+        background: #f7f9fc;
+        border-radius: 13px;
+    }
+
+    .info-icon {
+        font-size: 19px;
+        flex-shrink: 0;
+    }
+
+    .info-content {
+        min-width: 0;
+    }
+
+    .info-label {
+        display: block;
+        color: #8493aa;
+        font-size: 12px;
+        margin-bottom: 8px;
+    }
+
+    .info-value {
+        display: block;
+        color: #142d59;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    .register-btn {
+        display: block;
+        width: 100%;
+        padding: 17px 15px;
+        border-radius: 10px;
+        background: #2864ed;
+        color: white;
+        text-decoration: none;
+        text-align: center;
+        font-size: 15px;
+        font-weight: bold;
+        transition: background 0.2s;
+    }
+
+    .register-btn:hover {
+        background: #174dcc;
+    }
+
+    .register-btn.disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .empty-events {
+        max-width: 650px;
+        margin: 40px auto;
+        padding: 35px;
+        text-align: center;
+        background: white;
+        border-radius: 15px;
+        color: #64748b;
+    }
+
+    @media (max-width: 1100px) {
+        .events-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 700px) {
+        .events-page {
+            padding: 30px 16px;
+        }
+
+        .events-header h1 {
+            font-size: 30px;
+        }
+
+        .events-grid {
+            grid-template-columns: 1fr;
+            gap: 22px;
+        }
+
+        .event-card {
+            padding: 23px;
+        }
+
+        .event-card h2 {
+            font-size: 23px;
+        }
+    }
+
+    @media (max-width: 380px) {
+        .event-info-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="events-page">
 
     <div class="events-header">
-
-        <p class="section-label">
-            COLLEGE EVENTS
-        </p>
-
-        <h1>
-            Upcoming Events
-        </h1>
-
+        <h1>Explore Events</h1>
         <p>
             Explore upcoming technical, cultural and academic events
             and register for the ones you love.
         </p>
-
     </div>
 
+    {% if events %}
 
-    <!-- EVENTS GRID -->
-
-    <div class="events-grid">
-
-        {% if events %}
+        <div class="events-grid">
 
             {% for event in events %}
 
-            <div class="event-card">
+                <article class="event-card">
 
-                <div class="event-card-top">
-
-                    <span class="event-type">
-                        {{ event.Event_Type }}
-                    </span>
-
-                    {% if event.Remaining_Seats > 0 %}
-                        <span class="seats available">
-                            {{ event.Remaining_Seats }} seats left
+                    <div class="event-top">
+                        <span class="event-type">
+                            {{ event.Event_Type }}
                         </span>
+
+                        {% if event.Remaining_Seats is not none
+                              and event.Remaining_Seats > 0 %}
+                            <span class="seats-left">
+                                {{ event.Remaining_Seats }} seats left
+                            </span>
+                        {% else %}
+                            <span class="seats-full">
+                                Fully booked
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <h2>{{ event.Event_name }}</h2>
+
+                    <p class="event-description">
+                        {{ event.Description or "Join us for this exciting college event." }}
+                    </p>
+
+                    <div class="event-info-grid">
+
+                        <!-- Event date -->
+                        <div class="event-info">
+                            <span class="info-icon">🗓️</span>
+                            <div class="info-content">
+                                <span class="info-label">Date</span>
+                                <span class="info-value">
+                                    {% if event.Date %}
+                                        {{ event.Date.strftime('%d %b %Y') if event.Date.strftime is defined else event.Date }}
+                                    {% else %}
+                                        Not announced
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Event time -->
+                        <div class="event-info">
+                            <span class="info-icon">🕒</span>
+                            <div class="info-content">
+                                <span class="info-label">Time</span>
+                                <span class="info-value">
+                                    {% if event.Time %}
+                                        {{ event.Time }}
+                                    {% else %}
+                                        Not announced
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Registration fee -->
+                        <div class="event-info">
+                            <span class="info-icon">💰</span>
+                            <div class="info-content">
+                                <span class="info-label">Registration Fee</span>
+                                <span class="info-value">
+                                    ₹{{ "%.2f"|format(event.Registration_fee|float) }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Total capacity -->
+                        <div class="event-info">
+                            <span class="info-icon">👥</span>
+                            <div class="info-content">
+                                <span class="info-label">Capacity</span>
+                                <span class="info-value">
+                                    {{ event.Capacity }}
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {% if event.Remaining_Seats is not none
+                          and event.Remaining_Seats > 0 %}
+                        <a
+                            href="{{ url_for('registrations.register', event_id=event.Event_ID) }}"
+                            class="register-btn"
+                        >
+                            Register Now &nbsp; →
+                        </a>
                     {% else %}
-                        <span class="seats full">
-                            Full
+                        <span class="register-btn disabled">
+                            Event Full
                         </span>
                     {% endif %}
 
-                </div>
-
-
-                <h2>
-                    {{ event.Event_name }}
-                </h2>
-
-
-                {% if event.Description %}
-
-                <p class="event-description">
-                    {{ event.Description }}
-                </p>
-
-                {% endif %}
-
-
-                <div class="event-info">
-
-                    <div class="info-item">
-
-                        <span class="info-icon">
-                            📅
-                        </span>
-
-                        <div>
-                            <small>Date</small>
-                            <strong>{{ event.Event_Date }}</strong>
-                        </div>
-
-                    </div>
-
-
-                    <div class="info-item">
-
-                        <span class="info-icon">
-                            🕐
-                        </span>
-
-                        <div>
-                            <small>Time</small>
-                            <strong>{{ event.Event_Time }}</strong>
-                        </div>
-
-                    </div>
-
-
-                    <div class="info-item">
-
-                        <span class="info-icon">
-                            💰
-                        </span>
-
-                        <div>
-                            <small>Registration Fee</small>
-                            <strong>₹{{ event.Registration_Fee }}</strong>
-                        </div>
-
-                    </div>
-
-
-                    <div class="info-item">
-
-                        <span class="info-icon">
-                            👥
-                        </span>
-
-                        <div>
-                            <small>Capacity</small>
-                            <strong>{{ event.Capacity }}</strong>
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- REGISTER BUTTON -->
-
-                {% if event.Remaining_Seats > 0 %}
-
-                <a
-                    href="/register?event_id={{ event.Event_ID }}"
-                    class="event-register-btn"
-                >
-                    Register Now
-                    <span>→</span>
-                </a>
-
-                {% else %}
-
-                <button
-                    class="event-register-btn disabled"
-                    disabled
-                >
-                    Event Full
-                </button>
-
-                {% endif %}
-
-            </div>
+                </article>
 
             {% endfor %}
 
-        {% else %}
+        </div>
 
-            <div class="empty-message">
+    {% else %}
 
-                <h2>
-                    No events available
-                </h2>
+        <div class="empty-events">
+            <h2>No events available</h2>
+            <p>There are currently no events to display.</p>
+        </div>
 
-                <p>
-                    There are currently no upcoming events.
-                </p>
+    {% endif %}
 
-            </div>
-
-        {% endif %}
-
-    </div>
-
-</section>
+</div>
 
 {% endblock %}
