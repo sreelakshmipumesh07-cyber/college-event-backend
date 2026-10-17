@@ -1,257 +1,158 @@
-
+```html
 {% extends "base.html" %}
-
 {% block title %}Student Registration | College Events{% endblock %}
 
 {% block content %}
-
 <section class="register-page">
-    <div class="register-card">
+<div class="register-card">
 
-        <!-- Page Header -->
-        <div class="register-header">
-            <p class="section-label">EVENT REGISTRATION</p>
-            <h1>Student Registration</h1>
-            <p>Register for your selected college event.</p>
-        </div>
+<div class="register-header">
+<p class="section-label">EVENT REGISTRATION</p>
+<h1>Student Registration</h1>
+<p>Register for your selected college event.</p>
+</div>
 
-        <!-- Error Message -->
-        {% if error %}
-        <div class="registration-error">
-            ⚠️ {{ error }}
-        </div>
-        {% endif %}
+{% if error %}
+<div class="registration-error">⚠️ {{ error }}</div>
+{% endif %}
 
-        {% if event %}
+{% if event %}
+{% set fee = event.get('Registration_fee', 0) %}
 
-        <!-- Selected Event Details -->
-        <div class="selected-event">
+<div class="selected-event">
+<div class="selected-event-heading">
+<div>
+<span class="event-type">{{ event.get('Event_Type', 'COLLEGE EVENT') }}</span>
+<h2>{{ event.get('Event_name', 'College Event') }}</h2>
+</div>
+<div class="event-fee">
+{% if fee|float == 0 %}
+Free
+{% else %}
+₹{{ "%.2f"|format(fee|float) }}
+{% endif %}
+</div>
+</div>
 
-            <div class="selected-event-heading">
-                <div>
-                    <span class="event-type">
-                        {{ event.get('Event_Type', 'COLLEGE EVENT') }}
-                    </span>
+{% if event.get('Description') %}
+<p class="event-description">{{ event.get('Description') }}</p>
+{% endif %}
 
-                    <h2>
-                        {{ event.get('Event_name', 'College Event') }}
-                    </h2>
-                </div>
+<div class="selected-event-info">
+<div class="selected-info-item">
+<span class="info-icon">📅</span>
+<div><small>Event Date</small><strong>{{ event.get('Date', 'Not specified') }}</strong></div>
+</div>
 
-                <div class="event-fee">
-                    {% set fee = event.get('Registration_fee', 0) %}
-                    {% if fee|float == 0 %}
-                        Free
-                    {% else %}
-                        ₹{{ "%.2f"|format(fee|float) }}
-                    {% endif %}
-                </div>
-            </div>
+<div class="selected-info-item">
+<span class="info-icon">⏰</span>
+<div><small>Event Time</small><strong>{{ event.get('Time', 'Not specified') }}</strong></div>
+</div>
 
-            {% if event.get('Description') %}
-            <p class="event-description">
-                {{ event.get('Description') }}
-            </p>
-            {% endif %}
+<div class="selected-info-item">
+<span class="info-icon">🎟️</span>
+<div><small>Total Capacity</small><strong>{{ event.get('Capacity', 'Not specified') }}</strong></div>
+</div>
 
-            <div class="selected-event-info">
+<div class="selected-info-item">
+<span class="info-icon">🪑</span>
+<div><small>Seats Remaining</small><strong>{{ event.get('Remaining_Seats', 'Not specified') }}</strong></div>
+</div>
 
-                <div class="selected-info-item">
-                    <span class="info-icon">📅</span>
-                    <div>
-                        <small>Event Date</small>
-                        <strong>
-                            {{ event.get('Date', 'Not specified') }}
-                        </strong>
-                    </div>
-                </div>
+<div class="selected-info-item">
+<span class="info-icon">💰</span>
+<div>
+<small>Registration Fee</small>
+<strong>
+{% if fee|float == 0 %}
+Free
+{% else %}
+₹{{ "%.2f"|format(fee|float) }}
+{% endif %}
+</strong>
+</div>
+</div>
+</div>
+</div>
 
-                <div class="selected-info-item">
-                    <span class="info-icon">⏰</span>
-                    <div>
-                        <small>Event Time</small>
-                        <strong>
-                            {{ event.get('Time', 'Not specified') }}
-                        </strong>
-                    </div>
-                </div>
+<div class="student-section">
+<div class="student-section-header">
+<h2>Your Details</h2>
+<p class="form-description">
+Complete the fields below. Your details will be saved in the college event registration database.
+</p>
+</div>
 
-                <div class="selected-info-item">
-                    <span class="info-icon">🎟️</span>
-                    <div>
-                        <small>Total Capacity</small>
-                        <strong>
-                            {{ event.get('Capacity', 'Not specified') }}
-                        </strong>
-                    </div>
-                </div>
+<form method="POST"
+action="{{ url_for('registrations.register', event_id=event.get('Event_ID')) }}">
 
-                <div class="selected-info-item">
-                    <span class="info-icon">🪑</span>
-                    <div>
-                        <small>Seats Remaining</small>
-                        <strong>
-                            {{ event.get('Remaining_Seats', 'Not specified') }}
-                        </strong>
-                    </div>
-                </div>
+<div class="form-group">
+<label for="name">Full Name</label>
+<input type="text" id="name" name="name" maxlength="100"
+placeholder="Enter your full name"
+value="{{ request.form.get('name', '') }}"
+autocomplete="name" required>
+</div>
 
-                <div class="selected-info-item">
-                    <span class="info-icon">💰</span>
-                    <div>
-                        <small>Registration Fee</small>
-                        <strong>
-                            {% if fee|float == 0 %}
-                                Free
-                            {% else %}
-                                ₹{{ "%.2f"|format(fee|float) }}
-                            {% endif %}
-                        </strong>
-                    </div>
-                </div>
+<div class="form-group">
+<label for="phone">Phone Number</label>
+<input type="tel" id="phone" name="phone" maxlength="15"
+placeholder="Enter your phone number"
+value="{{ request.form.get('phone', '') }}"
+autocomplete="tel" required>
+</div>
 
-            </div>
-        </div>
+<div class="form-group">
+<label for="email">Email Address</label>
+<input type="email" id="email" name="email" maxlength="100"
+placeholder="Enter your email address"
+value="{{ request.form.get('email', '') }}"
+autocomplete="email" required>
+</div>
 
-        <!-- Student Registration Form -->
-        <div class="student-section">
+<div class="form-group">
+<label for="department">Department</label>
+<input type="text" id="department" name="department"
+maxlength="100" placeholder="e.g. Information Technology"
+value="{{ request.form.get('department', '') }}" required>
+</div>
 
-            <div class="student-section-header">
-                <h2>Your Details</h2>
-                <p class="form-description">
-                    Complete the fields below. Your details will be
-                    saved in the college event registration database.
-                </p>
-            </div>
+<div class="form-group">
+<label for="year">Year of Study</label>
+<select id="year" name="year" required>
+<option value="">Select your year</option>
+<option value="1" {% if request.form.get('year') == '1' %}selected{% endif %}>First Year</option>
+<option value="2" {% if request.form.get('year') == '2' %}selected{% endif %}>Second Year</option>
+<option value="3" {% if request.form.get('year') == '3' %}selected{% endif %}>Third Year</option>
+<option value="4" {% if request.form.get('year') == '4' %}selected{% endif %}>Fourth Year</option>
+</select>
+</div>
 
-            <form
-                method="POST"
-                action="{{ url_for('registrations.register', event_id=event.get('Event_ID')) }}"
-            >
+<div class="registration-actions">
+<a href="/events-page" class="btn secondary-btn">← Back to Events</a>
 
-                <div class="form-group">
-                    <label for="name">Full Name</label>
-                    <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        maxlength="100"
-                        placeholder="Enter your full name"
-                        value="{{ request.form.get('name', '') }}"
-                        autocomplete="name"
-                        required
-                    >
-                </div>
+<button type="submit" class="btn"
+{% if event.get('Remaining_Seats', 1)|int <= 0 %}disabled{% endif %}>
+{% if fee|float == 0 %}
+Complete Registration
+{% else %}
+Continue to Payment →
+{% endif %}
+</button>
+</div>
 
-                <div class="form-group">
-                    <label for="phone">Phone Number</label>
-                    <input
-                        type="tel"
-                        id="phone"
-                        name="phone"
-                        maxlength="15"
-                        placeholder="Enter your phone number"
-                        value="{{ request.form.get('phone', '') }}"
-                        autocomplete="tel"
-                        required
-                    >
-                </div>
+</form>
+</div>
 
-                <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        maxlength="100"
-                        placeholder="Enter your email address"
-                        value="{{ request.form.get('email', '') }}"
-                        autocomplete="email"
-                        required
-                    >
-                </div>
+{% else %}
+<div class="empty-message">
+<h2>Event Not Found</h2>
+<p>This event could not be found. Please select an event from the events page.</p>
+<a href="/events-page" class="btn">Browse Events</a>
+</div>
+{% endif %}
 
-                <div class="form-group">
-                    <label for="department">Department</label>
-                    <input
-                        type="text"
-                        id="department"
-                        name="department"
-                        maxlength="100"
-                        placeholder="e.g. Information Technology"
-                        value="{{ request.form.get('department', '') }}"
-                        required
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label for="year">Year of Study</label>
-                    <select id="year" name="year" required>
-                        <option value="">Select your year</option>
-
-                        <option value="1"
-                            {% if request.form.get('year') == '1' %}selected{% endif %}>
-                            First Year
-                        </option>
-
-                        <option value="2"
-                            {% if request.form.get('year') == '2' %}selected{% endif %}>
-                            Second Year
-                        </option>
-
-                        <option value="3"
-                            {% if request.form.get('year') == '3' %}selected{% endif %}>
-                            Third Year
-                        </option>
-
-                        <option value="4"
-                            {% if request.form.get('year') == '4' %}selected{% endif %}>
-                            Fourth Year
-                        </option>
-                    </select>
-                </div>
-
-                <!-- Form Actions -->
-                <div class="registration-actions">
-                    <a href="/events-page" class="btn secondary-btn">
-                        ← Back to Events
-                    </a>
-
-                    <button
-                        type="submit"
-                        class="btn"
-                        {% if event.get('Remaining_Seats', 1)|int <= 0 %}
-                            disabled
-                        {% endif %}
-                    >
-                        {% if fee|float == 0 %}
-                            Complete Registration
-                        {% else %}
-                            Continue to Payment →
-                        {% endif %}
-                    </button>
-                </div>
-
-            </form>
-        </div>
-
-        {% else %}
-
-        <!-- Event Not Found -->
-        <div class="empty-message">
-            <h2>Event Not Found</h2>
-            <p>
-                This event could not be found. Please select an event
-                from the events page.
-            </p>
-            <a href="/events-page" class="btn">
-                Browse Events
-            </a>
-        </div>
-
-        {% endif %}
-
-    </div>
+</div>
 </section>
-
 {% endblock %}
+```

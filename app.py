@@ -4,11 +4,11 @@ College Event Registration System - Flask Entry Point
 """
 
 import os
-
 from dotenv import load_dotenv
 
-# Load environment variables before importing admin authentication.
-load_dotenv()
+load_dotenv(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+)
 
 from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
@@ -28,17 +28,21 @@ from routes.admin_auth import admin_auth_bp
 # CREATE FLASK APPLICATION
 # ==================================================
 
+
 app = Flask(__name__)
 
 # Configure Flask sessions for admin authentication.
-app.secret_key = os.getenv("SECRET_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY")
 
-if not app.secret_key:
+if not SECRET_KEY:
     raise RuntimeError(
         "SECRET_KEY is missing from the .env file"
     )
 
+app.secret_key = SECRET_KEY
+
 # Enable CORS
+
 CORS(app)
 
 
