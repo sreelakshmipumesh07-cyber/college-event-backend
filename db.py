@@ -1,3 +1,4 @@
+
 import mysql.connector
 from config import DB_CONFIG
 
@@ -7,9 +8,7 @@ from config import DB_CONFIG
 # ---------------------------------------------------------
 
 def get_connection():
-
     try:
-
         connection = mysql.connector.connect(
             host=DB_CONFIG["host"],
             user=DB_CONFIG["user"],
@@ -21,9 +20,7 @@ def get_connection():
         return connection
 
     except mysql.connector.Error as err:
-
         print("Database connection error:", err)
-
         return None
 
 
@@ -31,60 +28,53 @@ def get_connection():
 # DATABASE QUERY
 # ---------------------------------------------------------
 
-def query_db(query, params=None, fetch=True, fetchone=False):
-
+def query_db(
+    query,
+    params=None,
+    fetch=True,
+    fetchone=False,
+    commit=False
+):
     connection = get_connection()
 
     if connection is None:
         return None
 
-    cursor = connection.cursor(dictionary=True)
+    cursor = None
 
     try:
+        cursor = connection.cursor(dictionary=True)
 
-        # Execute query
-        cursor.execute(
-            query,
-            params or ()
-        )
+        cursor.execute(query, params or ())
 
-        # ---------------------------------------------
-        # SELECT ONE ROW
-        # ---------------------------------------------
+        # SELECT queries return rows
+        if cursor.with_rows:
 
-        if fetchone:
+            if fetchone:
+                return cursor.fetchone()
 
-            result = cursor.fetchone()
+            if fetch:
+                return cursor.fetchall()
 
-            return result
+            return True
 
-        # ---------------------------------------------
-        # SELECT MULTIPLE ROWS
-        # ---------------------------------------------
-
-        if fetch:
-
-            result = cursor.fetchall()
-
-            return result
-
-        # ---------------------------------------------
-        # INSERT / UPDATE / DELETE
-        # ---------------------------------------------
-
+        # INSERT, UPDATE and DELETE queries
         connection.commit()
+
+        # Return the new ID for INSERT queries
+        if cursor.lastrowid:
+            return cursor.lastrowid
 
         return True
 
     except mysql.connector.Error as err:
-
         print("Database query error:", err)
 
         connection.rollback()
-
         return None
 
     finally:
+        if cursor is not None:
+            cursor.close()
 
-        cursor.close()
         connection.close()

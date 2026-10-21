@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -110,12 +110,12 @@
         </p>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
-            {% for category, message in messages %}
-                <p class="{{ 'success' if category == 'success' else 'error' }}">
-                    {{ message }}
-                </p>
-            {% endfor %}
-        {% endwith %}
+    {% for category, message in messages %}
+        {% if category == 'error' %}
+            <p class="error">{{ message }}</p>
+        {% endif %}
+    {% endfor %}
+{% endwith %}
 
         <form method="POST"
               action="{{ url_for('admin_auth.login') }}">
@@ -147,4 +147,3 @@
     </div>
 </body>
 </html>
-```

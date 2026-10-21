@@ -1,179 +1,108 @@
+
 {% extends "base.html" %}
 
 {% block title %}
 Admin Dashboard | College Events
 {% endblock %}
 
-
 {% block content %}
 
 <section class="page-header">
 
-    <h1>
-        Admin Dashboard
-    </h1>
+    <h1>Admin Dashboard</h1>
 
     <p>
         Manage and monitor the College Event Registration System.
     </p>
 
+    <!-- ADMIN LOGOUT BUTTON -->
+    <form action="{{ url_for('admin_auth.logout') }}"
+          method="POST"
+          style="margin-top: 20px;">
+
+        <button type="submit"
+                style="padding: 12px 24px;
+                       background: #dc2626;
+                       color: white;
+                       border: none;
+                       border-radius: 8px;
+                       font-size: 15px;
+                       font-weight: bold;
+                       cursor: pointer;">
+            🔒 Logout
+        </button>
+
+    </form>
+
 </section>
 
 
-<!-- =========================================
-     DASHBOARD CARDS
-========================================= -->
+<!-- DASHBOARD CARDS -->
 
 <section class="dashboard-cards">
 
     <div class="dashboard-card">
-
-        <h3>
-            👨‍🎓 Total Students
-        </h3>
-
-        <p>
-            {{ total_students }}
-        </p>
-
+        <h3>👨‍🎓 Total Students</h3>
+        <p>{{ total_students }}</p>
     </div>
 
-
     <div class="dashboard-card">
-
-        <h3>
-            📝 Total Registrations
-        </h3>
-
-        <p>
-            {{ total_registrations }}
-        </p>
-
+        <h3>📝 Total Registrations</h3>
+        <p>{{ total_registrations }}</p>
     </div>
 
-
     <div class="dashboard-card">
-
-        <h3>
-            🎯 Total Events
-        </h3>
-
-        <p>
-            {{ total_events }}
-        </p>
-
+        <h3>🎯 Total Events</h3>
+        <p>{{ total_events }}</p>
     </div>
 
-
     <div class="dashboard-card">
-
-        <h3>
-            👥 Total Organizers
-        </h3>
-
-        <p>
-            {{ total_organizers }}
-        </p>
-
+        <h3>👥 Total Organizers</h3>
+        <p>{{ total_organizers }}</p>
     </div>
 
 </section>
 
 
-<!-- =========================================
-     EVENT REGISTRATION SUMMARY
-========================================= -->
+<!-- EVENT REGISTRATION SUMMARY -->
 
 <section class="page-header">
-
-    <h1>
-        Event Registration Summary
-    </h1>
-
+    <h1>Event Registration Summary</h1>
 </section>
-
 
 <div class="table-container">
 
     {% if event_summary %}
 
     <table>
-
         <thead>
-
             <tr>
-
-                <th>
-                    Event ID
-                </th>
-
-                <th>
-                    Event Name
-                </th>
-
-                <th>
-                    Capacity
-                </th>
-
-                <th>
-                    Registered
-                </th>
-
-                <th>
-                    Remaining Seats
-                </th>
-
+                <th>Event ID</th>
+                <th>Event Name</th>
+                <th>Capacity</th>
+                <th>Registered</th>
+                <th>Remaining Seats</th>
             </tr>
-
         </thead>
 
-
         <tbody>
-
             {% for event in event_summary %}
-
             <tr>
-
-                <td>
-                    {{ event.Event_ID }}
-                </td>
-
-                <td>
-                    {{ event.Event_name }}
-                </td>
-
-                <td>
-                    {{ event.Capacity }}
-                </td>
-
-                <td>
-                    {{ event.Registration_Count }}
-                </td>
-
-                <td>
-                    {{ event.Remaining_Seats }}
-                </td>
-
+                <td>{{ event.Event_ID }}</td>
+                <td>{{ event.Event_name }}</td>
+                <td>{{ event.Capacity }}</td>
+                <td>{{ event.Registration_Count }}</td>
+                <td>{{ event.Remaining_Seats }}</td>
             </tr>
-
             {% endfor %}
-
         </tbody>
-
     </table>
 
     {% else %}
 
     <div class="empty-message">
-
-        <h2>
-            No event data available
-        </h2>
-
-        <p>
-            There are currently no events in the database.
-        </p>
-
+        <h2>No event data available</h2>
+        <p>There are currently no events in the database.</p>
     </div>
 
     {% endif %}
@@ -181,108 +110,47 @@ Admin Dashboard | College Events
 </div>
 
 
-<!-- =========================================
-     RECENT REGISTRATIONS
-========================================= -->
+<!-- RECENT REGISTRATIONS -->
 
 <section class="page-header">
-
-    <h1>
-        Recent Registrations
-    </h1>
-
+    <h1>Recent Registrations</h1>
 </section>
-
 
 <div class="table-container">
 
     {% if recent_registrations %}
 
     <table>
-
         <thead>
-
             <tr>
-
-                <th>
-                    Registration ID
-                </th>
-
-                <th>
-                    Student ID
-                </th>
-
-                <th>
-                    Student Name
-                </th>
-
-                <th>
-                    Event
-                </th>
-
-                <th>
-                    Registration Date
-                </th>
-
-                <th>
-                    Status
-                </th>
-
+                <th>Registration ID</th>
+                <th>Student ID</th>
+                <th>Student Name</th>
+                <th>Event</th>
+                <th>Registration Date</th>
+                <th>Status</th>
             </tr>
-
         </thead>
 
-
         <tbody>
-
             {% for registration in recent_registrations %}
-
             <tr>
-
-                <td>
-                    {{ registration.Registration_ID }}
-                </td>
-
-                <td>
-                    {{ registration.Student_ID }}
-                </td>
-
-                <td>
-                    {{ registration.Student_Name }}
-                </td>
-
-                <td>
-                    {{ registration.Event_name }}
-                </td>
-
-                <td>
-                    {{ registration.Registration_Date }}
-                </td>
-
-                <td>
-                    {{ registration.Status }}
-                </td>
-
+                <td>{{ registration.Registration_ID }}</td>
+                <td>{{ registration.Student_ID }}</td>
+                <td>{{ registration.Student_Name }}</td>
+                <td>{{ registration.Event_name }}</td>
+                <td>{{ registration.Registration_Date }}</td>
+                <td>{{ registration.Status }}</td>
             </tr>
-
             {% endfor %}
-
         </tbody>
-
     </table>
 
     {% else %}
 
     <div class="empty-message">
-
-        <h2>
-            No registrations yet
-        </h2>
-
-        <p>
-            Student registrations will appear here.
-        </p>
-
+        <h2>No registrations yet</h2>
+        <p>Student registrations will appear here.</p>
     </div>
 
     {% endif %}
@@ -290,24 +158,19 @@ Admin Dashboard | College Events
 </div>
 
 
-<!-- =========================================
-     ADMIN LINKS
-========================================= -->
+<!-- ADMIN LINKS -->
 
 <section class="admin-links">
 
-    <a href="/events-page"
-       class="admin-link">
+    <a href="/events-page" class="admin-link">
         🎯 View Events
     </a>
 
-    <a href="/registrations"
-       class="admin-link">
+    <a href="/registrations" class="admin-link">
         📋 View Registrations
     </a>
 
-    <a href="/"
-       class="admin-link">
+    <a href="/" class="admin-link">
         🏠 Back to Home
     </a>
 

@@ -7,7 +7,10 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        ".env"
+    )
 )
 
 from flask import Flask, jsonify, render_template, request
@@ -28,10 +31,8 @@ from routes.admin_auth import admin_auth_bp
 # CREATE FLASK APPLICATION
 # ==================================================
 
-
 app = Flask(__name__)
 
-# Configure Flask sessions for admin authentication.
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 if not SECRET_KEY:
@@ -40,8 +41,6 @@ if not SECRET_KEY:
     )
 
 app.secret_key = SECRET_KEY
-
-# Enable CORS
 
 CORS(app)
 
@@ -82,9 +81,39 @@ def events_page():
         """
     )
 
+    if events is None:
+        events = []
+
+    print("EVENTS FROM DATABASE:", events)
+
     return render_template(
         "events.html",
         events=events
+    )
+
+
+# ==================================================
+# EVENT DETAILS PAGE
+# ==================================================
+
+@app.get("/event-details/<int:event_id>")
+def event_details(event_id):
+    event = query_db(
+        """
+        SELECT *
+        FROM event
+        WHERE Event_ID = %s
+        """,
+        (event_id,),
+        fetchone=True
+    )
+
+    if not event:
+        return "Event not found", 404
+
+    return render_template(
+        "event_details.html",
+        event=event
     )
 
 
@@ -94,7 +123,7 @@ def events_page():
 
 @app.get("/registrations")
 def registrations():
-    registrations = query_db(
+    registration_list = query_db(
         """
         SELECT
             r.Registration_ID,
@@ -113,9 +142,12 @@ def registrations():
         """
     )
 
+    if registration_list is None:
+        registration_list = []
+
     return render_template(
         "registrations.html",
-        registrations=registrations
+        registrations=registration_list
     )
 
 
@@ -145,7 +177,7 @@ def register():
                 <a href="/events-page">Go to Events</a>
             </body>
             </html>
-            """
+            """, 400
 
         event = query_db(
             """
@@ -169,7 +201,7 @@ def register():
                 <a href="/events-page">Back to Events</a>
             </body>
             </html>
-            """
+            """, 404
 
         return render_template(
             "register.html",
@@ -183,7 +215,25 @@ def register():
     student_id = request.form.get("student_id")
     event_id = request.form.get("event_id")
 
+    if not student_id or not event_id:
+        return """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Missing Information</title>
+        </head>
+        <body>
+            <h1>Missing Information</h1>
+            <p>Please provide both Student ID and Event ID.</p>
+            <a href="/events-page">Back to Events</a>
+        </body>
+        </html>
+        """, 400
+
+    # --------------------------------------------------
     # CHECK STUDENT
+    # --------------------------------------------------
+
     student = query_db(
         """
         SELECT *
@@ -207,9 +257,12 @@ def register():
             <a href="/events-page">Back to Events</a>
         </body>
         </html>
-        """
+        """, 404
 
+    # --------------------------------------------------
     # CHECK EVENT
+    # --------------------------------------------------
+
     event = query_db(
         """
         SELECT *
@@ -232,10 +285,13 @@ def register():
             <a href="/events-page">Back to Events</a>
         </body>
         </html>
-        """
+        """, 404
 
+    # --------------------------------------------------
     # CHECK REMAINING SEATS
-    if event["Remaining_Seats"] <= 0:
+    # --------------------------------------------------
+
+    if event["Remaining_Seats"] is None or event["Remaining_Seats"] <= 0:
         return """
         <!DOCTYPE html>
         <html>
@@ -248,15 +304,18 @@ def register():
             <a href="/events-page">Back to Events</a>
         </body>
         </html>
-        """
+        """, 409
 
+    # --------------------------------------------------
     # CHECK DUPLICATE REGISTRATION
+    # --------------------------------------------------
+
     existing = query_db(
         """
         SELECT *
         FROM registration
         WHERE Student_ID = %s
-        AND Event_ID = %s
+          AND Event_ID = %s
         """,
         (student_id, event_id),
         fetchone=True
@@ -278,7 +337,7 @@ def register():
             <a href="/events-page">Back to Events</a>
         </body>
         </html>
-        """
+        """, 409
 
     # --------------------------------------------------
     # CREATE REGISTRATION
@@ -292,26 +351,63 @@ def register():
             VALUES
                 (%s, %s)
             """,
-            (student_id, event_id),
-            commit=True
+            (student_id, event_id)
         )
 
-        # REDUCE REMAINING SEATS
-        query_db(
+        if not registration_id:
+            return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Registration Failed</title>
+            </head>
+            <body>
+                <h1>Registration Failed</h1>
+                <p>The registration could not be saved.</p>
+                <a href="/events-page">Back to Events</a>
+            </body>
+            </html>
+            """, 500
+
+        # Reduce the remaining seats after a successful insert.
+        update_result = query_db(
             """
             UPDATE event
             SET Remaining_Seats = Remaining_Seats - 1
             WHERE Event_ID = %s
+              AND Remaining_Seats > 0
             """,
-            (event_id,),
-            commit=True
+            (event_id,)
         )
 
-        # SUCCESS PAGE
+        if update_result is None:
+            return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Registration Issue</title>
+            </head>
+            <body>
+                <h1>Registration Saved</h1>
+                <p>
+                    Your registration was saved, but the seat count
+                    could not be updated. Please contact the administrator.
+                </p>
+                <a href="/events-page">Back to Events</a>
+            </body>
+            </html>
+            """, 500
+
+        # --------------------------------------------------
+        # REGISTRATION SUCCESS PAGE
+        # --------------------------------------------------
+
         return f"""
         <!DOCTYPE html>
         <html>
         <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Registration Successful</title>
             <link rel="stylesheet" href="/static/css/style.css">
         </head>
@@ -352,6 +448,11 @@ def register():
                         {event["Event_name"]}
                     </p>
 
+                    <p>
+                        <strong>Registration Fee:</strong>
+                        ₹{event["Registration_fee"]}
+                    </p>
+
                     <br>
 
                     <a class="button" href="/events-page">
@@ -367,8 +468,10 @@ def register():
         </html>
         """
 
-    except Exception as e:
-        return f"""
+    except Exception:
+        app.logger.exception("Registration failed")
+
+        return """
         <!DOCTYPE html>
         <html>
         <head>
@@ -376,11 +479,11 @@ def register():
         </head>
         <body>
             <h1>Registration Failed</h1>
-            <p>{str(e)}</p>
+            <p>An error occurred while processing your registration.</p>
             <a href="/events-page">Back to Events</a>
         </body>
         </html>
-        """
+        """, 500
 
 
 # ==================================================
@@ -467,7 +570,23 @@ def admin_dashboard():
         """
     )
 
-    # SHOW ADMIN PAGE
+    if any(
+        result is None
+        for result in (
+            total_registrations,
+            total_students,
+            total_events,
+            total_organizers
+        )
+    ):
+        return "Unable to load admin dashboard data.", 500
+
+    if event_summary is None:
+        event_summary = []
+
+    if recent_registrations is None:
+        recent_registrations = []
+
     return render_template(
         "admin.html",
         total_registrations=total_registrations["total"],
@@ -484,24 +603,26 @@ def admin_dashboard():
 # ==================================================
 
 @app.errorhandler(404)
-def not_found(e):
+def not_found(error):
     return jsonify({
         "error": "Route not found"
     }), 404
 
 
 @app.errorhandler(405)
-def method_not_allowed(e):
+def method_not_allowed(error):
     return jsonify({
         "error": "Method not allowed"
     }), 405
 
 
 @app.errorhandler(500)
-def internal_error(e):
+def internal_error(error):
+    app.logger.exception("Internal server error")
+
     return jsonify({
         "error": "Internal server error",
-        "details": str(e)
+        "details": str(error)
     }), 500
 
 

@@ -10,9 +10,40 @@ def register():
 
     event_id = request.args.get("event_id")
 
+    # NEW: Show a separate event-selection page when
+    # the Register navbar link is clicked without an event ID.
     if not event_id:
-        return redirect("/events-page")
+        conn = get_connection()
 
+        if conn is None:
+            return "Database connection failed", 500
+
+        cursor = None
+
+        try:
+            cursor = conn.cursor(dictionary=True)
+
+            cursor.execute(
+                "SELECT * FROM event ORDER BY Date"
+            )
+            events = cursor.fetchall()
+
+            return render_template(
+                "registration_select.html",
+                events=events
+            )
+
+        except Exception as e:
+            print("Event selection error:", repr(e))
+            return "Unable to load events. Check the terminal.", 500
+
+        finally:
+            if cursor:
+                cursor.close()
+
+            conn.close()
+
+    # EXISTING: Registration form and submission logic
     conn = get_connection()
 
     if conn is None:

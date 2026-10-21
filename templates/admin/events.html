@@ -1,88 +1,393 @@
+
 {% extends "base.html" %}
 
-{% block title %}
-Manage Events
-{% endblock %}
+{% block title %}Explore Events | Campus EventHub{% endblock %}
 
 {% block content %}
 
-<section class="page-header">
+<style>
+.events-page {
+    background: #f4f7fc;
+    min-height: 100vh;
+    padding-bottom: 60px;
+    color: #172b52;
+}
 
-    <h1>Manage Events</h1>
+.events-hero {
+    padding: 55px 7%;
+    background: linear-gradient(120deg, #102c70, #4338ca, #7045e8);
+    color: white;
+}
 
-    <p>
-        View and manage college events.
-    </p>
+.events-hero-inner {
+    max-width: 1250px;
+    margin: auto;
+}
 
-</section>
+.events-hero .eyebrow {
+    color: #c7d2fe;
+    letter-spacing: 3px;
+    font-size: 12px;
+    font-weight: 800;
+}
 
+.events-hero h1 {
+    color: white;
+    font-size: clamp(34px, 4vw, 48px);
+    margin: 14px 0;
+}
 
-<section class="table-container">
+.events-hero p {
+    color: #e0e7ff;
+    font-size: 16px;
+    line-height: 1.8;
+    max-width: 650px;
+}
 
-    {% if events %}
+.events-main {
+    max-width: 1250px;
+    margin: auto;
+    padding: 38px 24px;
+}
 
-    <table>
+.events-heading {
+    margin-bottom: 25px;
+}
 
-        <thead>
+.events-heading h2 {
+    margin: 0 0 8px;
+    font-size: 28px;
+}
 
-            <tr>
-                <th>Event ID</th>
-                <th>Event Name</th>
-                <th>Date</th>
-                <th>Fee</th>
-                <th>Capacity</th>
-            </tr>
+.events-heading p {
+    color: #64748b;
+    margin: 0;
+}
 
-        </thead>
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 25px;
+}
 
-        <tbody>
+.event-card {
+    overflow: hidden;
+    background: white;
+    border: 1px solid #e0e7f2;
+    border-radius: 17px;
+    box-shadow: 0 6px 22px rgba(24, 45, 85, .06);
+    transition: transform .2s, box-shadow .2s;
+}
+
+.event-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 30px rgba(24, 45, 85, .12);
+}
+
+.event-image {
+    position: relative;
+    height: 210px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #dbeafe, #ede9fe);
+}
+
+.event-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .3s;
+}
+
+.event-card:hover .event-image img {
+    transform: scale(1.04);
+}
+
+.category-badge {
+    position: absolute;
+    left: 16px;
+    top: 16px;
+    background: white;
+    color: #3730a3;
+    padding: 7px 12px;
+    border-radius: 25px;
+    font-size: 12px;
+    font-weight: 750;
+    box-shadow: 0 3px 12px rgba(0,0,0,.1);
+}
+
+.event-content {
+    padding: 23px;
+}
+
+.event-content h3 {
+    margin: 0 0 11px;
+    font-size: 22px;
+    line-height: 1.35;
+}
+
+.event-description {
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.75;
+    min-height: 49px;
+    margin: 0 0 20px;
+}
+
+.event-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 11px;
+    margin-bottom: 18px;
+}
+
+.info-item {
+    background: #f5f7fc;
+    padding: 13px;
+    border-radius: 10px;
+    min-width: 0;
+}
+
+.info-label {
+    display: block;
+    color: #71809a;
+    font-size: 11px;
+    margin-bottom: 6px;
+}
+
+.info-value {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+    color: #1e3157;
+}
+
+.event-meta {
+    border-top: 1px solid #edf0f7;
+    padding-top: 15px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px;
+}
+
+.event-fee {
+    color: #4338ca;
+    font-weight: 800;
+}
+
+.event-seats {
+    color: #64748b;
+    text-align: right;
+}
+
+.details-button {
+    display: block;
+    margin-top: 20px;
+    width: 100%;
+    padding: 13px 16px;
+    border: 1px solid #d9e2f5;
+    border-radius: 10px;
+    text-align: center;
+    color: #3730a3 !important;
+    background: #f7f8ff;
+    font-size: 14px;
+    font-weight: 750;
+    text-decoration: none;
+    transition: .2s;
+}
+
+.details-button:hover {
+    background: #4338ca;
+    border-color: #4338ca;
+    color: white !important;
+}
+
+.events-empty {
+    background: white;
+    border: 1px dashed #cbd5e1;
+    border-radius: 16px;
+    padding: 45px;
+    text-align: center;
+    color: #64748b;
+}
+
+@media (max-width: 1000px) {
+    .events-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 650px) {
+    .events-hero {
+        padding: 40px 22px;
+    }
+
+    .events-main {
+        padding: 28px 16px;
+    }
+
+    .events-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .event-description {
+        min-height: 0;
+    }
+}
+</style>
+
+<div class="events-page">
+
+    <section class="events-hero">
+        <div class="events-hero-inner">
+            <div class="eyebrow">CAMPUS EVENTS · 2026</div>
+            <h1>Discover what's happening.</h1>
+            <p>
+                From technical competitions and hands-on workshops
+                to cultural celebrations, explore the experiences
+                that make campus life memorable.
+            </p>
+        </div>
+    </section>
+
+    <main class="events-main">
+
+        <div class="events-heading">
+            <h2>Explore All Events</h2>
+            <p>Discover event details, schedules, fees and availability.</p>
+        </div>
+
+        {% if events %}
+
+        <div class="events-grid">
 
             {% for event in events %}
 
-            <tr>
+            {% set category = (event.Event_Type or '')|lower %}
 
-                <td>
-                    {{ event.Event_ID }}
-                </td>
+            <article class="event-card">
 
-                <td>
-                    {{ event.Event_Name }}
-                </td>
+                <div class="event-image">
 
-                <td>
-                    {{ event.Event_Date }}
-                </td>
+                    {% if 'technical' in category %}
+                    <img
+                        src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80"
+                        alt="Technology and computers at a technical event"
+                        loading="lazy">
 
-                <td>
-                    ₹{{ event.Registration_Fee }}
-                </td>
+                    {% elif 'cultural' in category %}
+                    <img
+                        src="https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=900&q=80"
+                        alt="Live stage performance at a cultural event"
+                        loading="lazy">
 
-                <td>
-                    {{ event.Capacity }}
-                </td>
+                    {% elif 'sport' in category %}
+                    <img
+                        src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=900&q=80"
+                        alt="Athletes participating in a sporting event"
+                        loading="lazy">
 
-            </tr>
+                    {% elif 'workshop' in category %}
+                    <img
+                        src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=900&q=80"
+                        alt="Students working on a practical technical project"
+                        loading="lazy">
+
+                    {% else %}
+                    <img
+                        src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=900&q=80"
+                        alt="People attending an organised event"
+                        loading="lazy">
+                    {% endif %}
+
+                    <span class="category-badge">
+                        {{ event.Event_Type or "Campus Event" }}
+                    </span>
+
+                </div>
+
+                <div class="event-content">
+
+                    <h3>{{ event.Event_name }}</h3>
+
+                    <p class="event-description">
+                        {{ event.Description or
+                        "Discover the event, meet other students and take part in campus activities." }}
+                    </p>
+
+                    <div class="event-info">
+
+                        <div class="info-item">
+                            <span class="info-label">EVENT DATE</span>
+                            <span class="info-value">{{ event.Date }}</span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">START TIME</span>
+                            <span class="info-value">{{ event.Time }}</span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">REGISTRATION FEE</span>
+                            <span class="info-value">
+                                {% if event.Registration_fee is not none and event.Registration_fee|float == 0 %}
+                                Free
+                                {% else %}
+                                ₹{{ event.Registration_fee }}
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">TOTAL CAPACITY</span>
+                            <span class="info-value">
+                                {{ event.Capacity }} participants
+                            </span>
+                        </div>
+
+                    </div>
+
+                    <div class="event-meta">
+                        <span class="event-fee">
+                            {% if event.Remaining_Seats is not none and event.Remaining_Seats > 0 %}
+                            Registration available
+                            {% else %}
+                            Fully booked
+                            {% endif %}
+                        </span>
+
+                        <span class="event-seats">
+                            {{ event.Remaining_Seats or 0 }} seats left
+                        </span>
+                    </div>
+
+                    <a
+                        class="details-button"
+                        href="{{ url_for('event_details', event_id=event.Event_ID) }}">
+                        View Event Details →
+                    </a>
+
+                </div>
+
+            </article>
 
             {% endfor %}
 
-        </tbody>
+        </div>
 
-    </table>
+        {% else %}
 
-    {% else %}
+        <div class="events-empty">
+            <h3>No events available yet</h3>
+            <p>Check back when new college events are added.</p>
+        </div>
 
-    <div class="empty-message">
+        {% endif %}
 
-        <h2>No events found</h2>
+    </main>
 
-        <p>
-            There are currently no events available.
-        </p>
-
-    </div>
-
-    {% endif %}
-
-</section>
+</div>
 
 {% endblock %}
