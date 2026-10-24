@@ -1,0 +1,151 @@
+
+{% extends "base.html" %}
+
+{% block title %}
+    {{ config.title }} Management
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1200px; margin: 30px auto; padding: 20px;">
+
+    <h1>{{ config.title }} Management</h1>
+
+    <p>
+        <a href="{{ url_for('admin_management.index') }}">← Management Home</a>
+        |
+        <a href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a>
+    </p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div style="padding: 12px; margin: 12px 0;
+                            border-radius: 6px;
+                            background: #f1f1f1;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if mode == "insert" or mode == "update" %}
+        <h2>
+            {% if mode == "insert" %}
+                Add {{ config.title[:-1] if config.title.endswith('s') else config.title }}
+            {% else %}
+                Update Record
+            {% endif %}
+        </h2>
+
+        <form method="POST"
+              action="{% if mode == 'insert' %}
+                      {{ url_for('admin_management.insert_record', entity=entity) }}
+                      {% else %}
+                      {{ url_for('admin_management.update_record', entity=entity, record_id=record[config.primary]) }}
+                      {% endif %}">
+
+            {% for column, label, field_type in config.fields %}
+                <div style="margin-bottom: 18px;">
+                    <label for="{{ column }}"
+                           style="display: block; font-weight: bold; margin-bottom: 6px;">
+                        {{ label }}
+                    </label>
+
+                    {% if field_type == "textarea" %}
+                        <textarea id="{{ column }}"
+                                  name="{{ column }}"
+                                  rows="4"
+                                  required
+                                  style="width: 100%; padding: 10px;">{{ record[column] if record else '' }}</textarea>
+                    {% else %}
+                        <input
+                            id="{{ column }}"
+                            name="{{ column }}"
+                            type="{{ field_type }}"
+                            value="{{ record[column] if record else '' }}"
+                            {% if field_type == "number" and column != "Registration_fee" %}step="1"{% endif %}
+                            {% if column == "Registration_fee" %}step="0.01" min="0"{% endif %}
+                            required
+                            style="width: 100%; padding: 10px; box-sizing: border-box;">
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button type="submit"
+                    style="padding: 11px 22px; background: #1769aa;
+                           color: white; border: none; border-radius: 6px;
+                           cursor: pointer;">
+                Save
+            </button>
+
+            <a href="{{ url_for('admin_management.list_records', entity=entity) }}"
+               style="margin-left: 12px;">Cancel</a>
+        </form>
+
+    {% else %}
+        <a href="{{ url_for('admin_management.insert_record', entity=entity) }}"
+           style="display: inline-block; margin: 15px 0; padding: 10px 16px;
+                  background: #16803c; color: white; border-radius: 6px;
+                  text-decoration: none;">
+            + Insert New Record
+        </a>
+
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                <thead>
+                    <tr style="background: #e9ecef;">
+                        {% for column in config.columns %}
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">
+                                {{ column }}
+                            </th>
+                        {% endfor %}
+                        <th style="padding: 12px; border: 1px solid #ddd;">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for item in records %}
+                        <tr>
+                            {% for column in config.columns %}
+                                <td style="padding: 10px; border: 1px solid #ddd;">
+                                    {{ item[column] if item[column] is not none else '' }}
+                                </td>
+                            {% endfor %}
+
+                            <td style="padding: 10px; border: 1px solid #ddd; white-space: nowrap;">
+                                <a href="{{ url_for('admin_management.update_record',
+                                                    entity=entity,
+                                                    record_id=item[config.primary]) }}">
+                                    Edit
+                                </a>
+
+                                <form method="POST"
+                                      action="{{ url_for('admin_management.delete_record',
+                                                         entity=entity,
+                                                         record_id=item[config.primary]) }}"
+                                      style="display: inline;"
+                                      onsubmit="return confirm('Delete this record? This may fail if other records depend on it.');">
+                                    <button type="submit"
+                                            style="margin-left: 8px; color: #b42318;
+                                                   cursor: pointer;">
+                                        Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="{{ config.columns|length + 1 }}"
+                                style="padding: 20px; text-align: center;">
+                                No records found.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

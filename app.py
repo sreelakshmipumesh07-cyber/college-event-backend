@@ -25,6 +25,7 @@ from routes.organizers import organizers_bp
 from routes.registrations import registrations_bp
 from routes.payments import payments_bp
 from routes.admin_auth import admin_auth_bp
+from routes.admin_management import admin_management_bp
 
 
 # ==================================================
@@ -56,6 +57,7 @@ app.register_blueprint(organizers_bp)
 app.register_blueprint(registrations_bp)
 app.register_blueprint(payments_bp)
 app.register_blueprint(admin_auth_bp)
+app.register_blueprint(admin_management_bp)
 
 
 # ==================================================
@@ -291,7 +293,10 @@ def register():
     # CHECK REMAINING SEATS
     # --------------------------------------------------
 
-    if event["Remaining_Seats"] is None or event["Remaining_Seats"] <= 0:
+    if (
+        event["Remaining_Seats"] is None
+        or event["Remaining_Seats"] <= 0
+    ):
         return """
         <!DOCTYPE html>
         <html>
@@ -369,7 +374,7 @@ def register():
             </html>
             """, 500
 
-        # Reduce the remaining seats after a successful insert.
+        # Reduce remaining seats after a successful insert.
         update_result = query_db(
             """
             UPDATE event
